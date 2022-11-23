@@ -1,0 +1,108 @@
+@import url("https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@200;300;400;500;700&display=swap");
+@import url("../node_modules/@fortawesome/fontawesome-free/css/all.min.css");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #151515;
+  color: #fafafa;
+  font-size: 16px;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.tippy-box[data-theme~="black"] {
+  background-color: black;
+}
+
+.tippy-box[data-theme~="black"][data-placement^="top"] > .tippy-arrow::before {
+  border-top-color: black;
+  transform: scaleY(0.8);
+}
+
+.tippy-box[data-theme~="black"][data-placement^="bottom"] > .tippy-arrow::before {
+  border-bottom-color: black;
+  transform: scaleY(0.8);
+}
+
+.leading-min {
+  line-height: 1.15;
+}
+
+@layer components {
+  .hide-scroll {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .hide-scroll::-webkit-scrollbar {
+    display: none;
+  }
+}
+.play-icon {
+  opacity: 0;
+  transition: all 100ms ease-in-out;
+}
+
+.play-icon:hover {
+  opacity: 1;
+  color: #ffdd55;
+}
+
+.play-button {
+  --icon: "\f04b";
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  line-height: 1;
+}
+
+[data-audio-state="playing"] .play-button {
+  --icon: "\f04c";
+}
+
+[data-audio-state="playing"] .play-icon {
+  opacity: 1;
+}
+
+.play-button::before {
+  content: var(--icon);
+}
+
+.slider:hover .slider-track {
+  height: 8px;
+}
+
+.slider-thumb {
+  transition: height 50ms ease-in-out, width 50ms ease-in-out;
+}
+
+.slider-thumb:hover ~ .slider-track {
+  height: 8px;
+}
+
+.slider:hover .slider-thumb {
+  height: 16px;
+  width: 16px;
+}
+
+.slider-track {
+  margin-left: 8px;
+  margin-right: 8px;
+  border-radius: 0 9999px 9999px 0;
+  background-color: theme(colors.neutral.500);
+  transition: height 50ms ease-in-out;
+}
+
+.slider-track.slider-track-0 {
+  border-radius: 9999px;
+  background-color: #ffdd55;
+  opacity: 0.85;
+}
