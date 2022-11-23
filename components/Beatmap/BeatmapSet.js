@@ -1,7 +1,7 @@
 import React, { createRef, useEffect, useState } from "react";
 import "tippy.js/dist/tippy.css";
 import Tooltip from "../Tooltip";
-import { secToTime } from "../../utils/timeString";
+import { secToDate, secToTime } from "../../utils/timeString";
 import BeatmapsInfo from "./BeatmapsInfo";
 import { debounce } from "lodash";
 import { audioPlayer } from "../../utils/audio";
@@ -132,14 +132,14 @@ const BeatmapSet = ({ beatmapSet, touchDevice, showEarly }) => {
                     : ""}
                   {beatmapSet.re ? <br /> : null}
                   <b>
-                    {new Date(tooltipDate).toLocaleDateString("default", {
+                    {secToDate(tooltipDate).toLocaleDateString("default", {
                       year: "numeric",
                       month: "long",
                       day: "numeric",
                     })}
                   </b>{" "}
                   <span style={{ color: "#B8D3E0" }}>
-                    {new Date(tooltipDate)
+                    {secToDate(tooltipDate)
                       .toLocaleTimeString("default", {
                         hour: "numeric",
                         minute: "numeric",
@@ -155,7 +155,7 @@ const BeatmapSet = ({ beatmapSet, touchDevice, showEarly }) => {
                 data-tip
                 className="w-min text-yellow font-bold text-xl whitespace-nowrap pointer-events-auto leading-min my-0.5"
               >
-                {formatDate(new Date(date))}
+                {formatDate(secToDate(date))}
                 {beatmapSet.re ? (
                   <>
                     *

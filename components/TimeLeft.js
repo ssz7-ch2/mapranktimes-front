@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { msToTime } from "../utils/timeString";
+import { msToTime, secToDate } from "../utils/timeString";
 
 const TimeLeft = ({ beatmapSets, filter, setBeatmapSets, className, onClick, showEarly }) => {
   const [timeLeft, setTimeLeft] = useState(NaN);
@@ -16,11 +16,11 @@ const TimeLeft = ({ beatmapSets, filter, setBeatmapSets, className, onClick, sho
 
       // update rankEarly
       for (const beatmapSet of beatmapSets) {
-        if (date < new Date(beatmapSet.rde ?? beatmapSet.rd)) break;
+        if (date < secToDate(beatmapSet.rde ?? beatmapSet.rd)) break;
         let updateBeatmapSets = false;
         if (
           beatmapSet.re &&
-          date > Math.ceil(new Date(beatmapSet.rde).getTime() / 300000) * 300000
+          date > Math.ceil(secToDate(beatmapSet.rde).getTime() / 300000) * 300000
         ) {
           beatmapSet.re = false;
           updateBeatmapSets = true;
@@ -41,8 +41,8 @@ const TimeLeft = ({ beatmapSets, filter, setBeatmapSets, className, onClick, sho
         beatmapSet = filteredSets[0];
       }
 
-      let rankDate = new Date(beatmapSet.rd);
-      if (showEarly && beatmapSet.re) rankDate = new Date(beatmapSet.rde);
+      let rankDate = secToDate(beatmapSet.rd);
+      if (showEarly && beatmapSet.re) rankDate = secToDate(beatmapSet.rde);
 
       setTimeLeft(Math.floor(rankDate / 60000) * 60000 - date);
     };

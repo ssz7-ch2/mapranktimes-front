@@ -8,6 +8,7 @@ import Dialog from "../components/Dialog";
 import { audioPlayer } from "../utils/audio";
 import Slider from "../components/Slider";
 import { debounce } from "lodash";
+import { secToDate } from "../utils/timeString";
 
 const detectMediaChange = (mediaQuery, setValue, callback) => {
   const mql = matchMedia(mediaQuery);
@@ -41,11 +42,16 @@ const Home = () => {
   const getLocalBeatmapSets = () => {
     const localBeatmapSets = localStorage.getItem("beatmapSets");
     if (localBeatmapSets) {
-      setBeatmapSets(
-        JSON.parse(localBeatmapSets).filter(
-          (beatmapSet) => Date.now() - new Date(beatmapSet.rd).getTime() < 10 * 60000
-        )
-      );
+      if (localBeatmapSets[0].rd) {
+        setBeatmapSets(
+          JSON.parse(localBeatmapSets).filter(
+            (beatmapSet) => Date.now() - secToDate(beatmapSet.rd).getTime() < 10 * 60000
+          )
+        );
+      } else {
+        // remove old version
+        localStorage.removeItem("beatmapSets");
+      }
       console.log("local beatmapsets loaded");
     }
   };
@@ -59,7 +65,7 @@ const Home = () => {
   };
 
   const connectServer = () => {
-    let events = new EventSource("https://map-rank-times.onrender.com/beatmapsets?stream");
+    let events = new EventSource("https://mapranktimes.onrender.com/beatmapsets?stream");
 
     events.onmessage = (event) => {
       const updatedBeatmapSets = JSON.parse(event.data);
@@ -83,7 +89,7 @@ const Home = () => {
             "An error occurred while attempting to connect to server. Trying again in 1 min..."
           );
           await new Promise((resolve) => setTimeout(resolve, 60000));
-          events = new EventSource("https://map-rank-times.onrender.com/beatmapsets?stream");
+          events = new EventSource("https://mapranktimes.onrender.com/beatmapsets?stream");
           events.onerror = handleError;
           break;
       }

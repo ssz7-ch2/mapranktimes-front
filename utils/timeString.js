@@ -25,3 +25,5 @@ export const msToTime = (milliseconds) => {
 
   return `${negative ? "-" : ""}${hours}:${minutes}:${seconds}`;
 };
+
+export const secToDate = (seconds) => new Date(seconds * 1000);
