@@ -291,7 +291,7 @@ const Home = () => {
                 </li>
                 <li>
                   <a
-                    href="https://github.com/ssz7-ch2/mapranktimes/blob/main/backend/README.md"
+                    href="https://github.com/ssz7-ch2/mapranktimes-back/blob/main/README.md"
                     target="_blank"
                     className="text-neutral-400"
                     rel="noreferrer"
