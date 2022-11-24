@@ -18,14 +18,7 @@ const TimeLeft = ({ beatmapSets, filter, setBeatmapSets, className, onClick, sho
       for (const beatmapSet of beatmapSets) {
         if (date < secToDate(beatmapSet.rde ?? beatmapSet.rd)) break;
         let updateBeatmapSets = false;
-        if (beatmapSet.re === false) {
-          // Assume ranking function on server failed?? if more than 12 minutes passed
-          if (date.getTime() > beatmapSet.rd * 1000 + 720000) {
-            // change to next interval by adding 20 min
-            beatmapSet.rd = beatmapSet.rd + 1200;
-            updateBeatmapSets = true;
-          }
-        } else if (date > Math.ceil((beatmapSet.rde * 1000) / 600000) * 600000) {
+        if (beatmapSet.re && date > Math.ceil((beatmapSet.rde * 1000) / 600000) * 600000) {
           beatmapSet.re = false;
           updateBeatmapSets = true;
         }
