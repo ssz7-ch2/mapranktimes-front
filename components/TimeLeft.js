@@ -15,15 +15,15 @@ const TimeLeft = ({ beatmapSets, filter, setBeatmapSets, className, onClick, sho
       }
 
       // update rankEarly
+      let updateBeatmapSets = false;
       for (const beatmapSet of beatmapSets) {
         if (date < secToDate(beatmapSet.rde ?? beatmapSet.rd)) break;
-        let updateBeatmapSets = false;
         if (beatmapSet.re && date > Math.ceil((beatmapSet.rde * 1000) / 600000) * 600000) {
           beatmapSet.re = false;
           updateBeatmapSets = true;
         }
-        if (updateBeatmapSets) setBeatmapSets([...beatmapSets]);
       }
+      if (updateBeatmapSets) setBeatmapSets([...beatmapSets]);
 
       let beatmapSet = beatmapSets[0];
 
