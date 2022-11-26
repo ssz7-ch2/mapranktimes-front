@@ -6,7 +6,7 @@ const handler = async (req, res) => {
 
   try {
     const result = await axios.get(
-      `https://map-rank-times.onrender.com/beatmapsets/${id}`
+      `https://mapranktimes.onrender.com/beatmapsets/${id}`
     );
     res.status(200).json(result.data);
   } catch (error) {
