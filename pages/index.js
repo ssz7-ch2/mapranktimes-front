@@ -49,12 +49,12 @@ const Home = () => {
             (beatmapSet) => Date.now() - secToDate(beatmapSet.rd).getTime() < 10 * 60000
           )
         );
+        console.log("local beatmapsets loaded");
       } else {
         // remove old version
         localStorage.removeItem("beatmapSets");
         console.log("removed old beatmapsets");
       }
-      console.log("local beatmapsets loaded");
     }
   };
 
