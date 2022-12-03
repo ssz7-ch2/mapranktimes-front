@@ -42,15 +42,17 @@ const Home = () => {
   const getLocalBeatmapSets = () => {
     const localBeatmapSets = localStorage.getItem("beatmapSets");
     if (localBeatmapSets) {
-      if (localBeatmapSets[0].rd) {
+      const beatmapSets = JSON.parse(localBeatmapSets);
+      if (beatmapSets[0].rd) {
         setBeatmapSets(
-          JSON.parse(localBeatmapSets).filter(
+          beatmapSets.filter(
             (beatmapSet) => Date.now() - secToDate(beatmapSet.rd).getTime() < 10 * 60000
           )
         );
       } else {
         // remove old version
         localStorage.removeItem("beatmapSets");
+        console.log("removed old beatmapsets");
       }
       console.log("local beatmapsets loaded");
     }
