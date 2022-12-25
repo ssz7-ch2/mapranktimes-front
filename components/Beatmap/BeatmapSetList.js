@@ -2,7 +2,7 @@ import { chunk } from "lodash";
 import BeatmapSet from "./BeatmapSet";
 import VirtualList from "../VirtualList";
 
-const beatmapSetList = ({ items, touchDevice, showEarly }) => (
+const beatmapSetList = ({ items, touchDevice, showEarly, allModes }) => (
   <div>
     {items.map((row) => (
       <div
@@ -12,7 +12,12 @@ const beatmapSetList = ({ items, touchDevice, showEarly }) => (
         {row.map((beatmapSet) => {
           return (
             <div key={beatmapSet.id} className="w-full md:w-1/2">
-              <BeatmapSet beatmapSet={beatmapSet} touchDevice={touchDevice} showEarly={showEarly} />
+              <BeatmapSet
+                beatmapSet={beatmapSet}
+                touchDevice={touchDevice}
+                showEarly={showEarly}
+                allModes={allModes}
+              />
             </div>
           );
         })}
@@ -21,7 +26,7 @@ const beatmapSetList = ({ items, touchDevice, showEarly }) => (
   </div>
 );
 
-const BeatmapSetList = ({ beatmapSets, filter, touchDevice, largeScreen, showEarly }) => {
+const BeatmapSetList = ({ beatmapSets, filter, touchDevice, largeScreen, showEarly, allModes }) => {
   const filteredBeatmapSets = beatmapSets?.filter((beatmapSet) => filter(beatmapSet)) ?? [];
   return (
     filteredBeatmapSets.length > 0 && (
@@ -30,7 +35,7 @@ const BeatmapSetList = ({ beatmapSets, filter, touchDevice, largeScreen, showEar
         itemHeight={largeScreen ? 164 : 124}
         items={chunk(filteredBeatmapSets, largeScreen ? 2 : 1)}
       >
-        {({ items }) => beatmapSetList({ items, touchDevice, showEarly })}
+        {({ items }) => beatmapSetList({ items, touchDevice, showEarly, allModes })}
       </VirtualList>
     )
   );
