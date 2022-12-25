@@ -10,8 +10,6 @@ import Slider from "../components/Slider";
 import { debounce } from "lodash";
 import { secToDate } from "../utils/timeString";
 
-const API_URL = process.env.API_URL || "http://localhost:5000/beatmapsets?stream";
-
 const detectMediaChange = (mediaQuery, setValue, callback) => {
   const mql = matchMedia(mediaQuery);
   setValue && setValue(mql.matches);
@@ -38,6 +36,7 @@ const Home = () => {
   const [filterOn, setFilterOn] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [defaultVolume, setDefaultVolume] = useState(70);
+  const [probability, setProbability] = useState(0.01);
   const [showEarly, setShowEarly] = useState(null);
   const [selectedMode, _setSelectedMode] = useState(0); // -1 All, 0 osu, 1 taiko, 2 catch, 3 mania
   const volumeSliderRef = useRef();
@@ -84,6 +83,8 @@ const Home = () => {
   };
 
   const connectServer = () => {
+    const API_URL =
+      process.env.API_URL || `http://${window.location.hostname}:5000/beatmapsets?stream`;
     let events = new EventSource(API_URL);
 
     events.onmessage = (event) => {
@@ -150,6 +151,11 @@ const Home = () => {
       setShowEarly(false);
     }
 
+    const probability = localStorage.getItem("probability");
+    if (probability) {
+      setProbability(parseFloat(probability));
+    }
+
     const mode = localStorage.getItem("mode");
     if (mode) {
       _setSelectedMode(parseInt(mode));
@@ -192,17 +198,19 @@ const Home = () => {
           filter={(beatmapSet) => {
             return (
               (selectedMode === -1 || beatmapSet.b.some((beatmap) => beatmap.m == selectedMode)) &&
-              (filterOn && filter.applyFilter(beatmapSet) ? filter.applyFilter(beatmapSet) : true)
+              (filterOn && filter.applyFilter ? filter.applyFilter(beatmapSet) : true)
             );
           }}
           setBeatmapSets={setBeatmapSets}
-          className="mt-12 mb-6 md:mt-14 md:mb-8"
+          className="mt-10 mb-5 md:mt-14 md:mb-7"
           onClick={() => setDialogOpen(!dialogOpen)}
           showEarly={showEarly}
+          probability={probability}
         />
 
         <div className="flex items-center leading-none mb-2 md:mb-3 gap-2 font-light text-[17px]">
           <button
+            title={`${beatmapSets?.length ?? 0} maps`}
             className="opacity-60 hover:opacity-100 transition-opacity"
             style={{
               opacity: selectedMode === -1 ? 1 : undefined,
@@ -214,6 +222,10 @@ const Home = () => {
           </button>
           {modeList.map((mode, i) => (
             <button
+              title={`${
+                beatmapSets?.filter((beatmapSet) => beatmapSet.b.some((beatmap) => beatmap.m == i))
+                  .length ?? 0
+              } maps`}
               key={`${mode}${i}`}
               className="opacity-60 hover:opacity-100 transition-opacity"
               style={{
@@ -281,6 +293,7 @@ const Home = () => {
               largeScreen={largeScreen}
               showEarly={showEarly}
               allModes={selectedMode === -1}
+              probability={probability}
             />
           )}
         </div>
@@ -390,6 +403,20 @@ const Home = () => {
                 className="whitespace-nowrap gap-2"
                 textAfter
               />
+            </div>
+            <div className="flex gap-1 items-center">
+              <span className="whitespace-nowrap text-sm leading-none">Early Cutoff</span>
+              <Slider
+                setExternalValue={(value) => setProbability(value / 100 / 2)}
+                saveValue={(value) => {
+                  localStorage.setItem("probability", value / 100 / 2);
+                }}
+                defaultValue={probability * 2 * 100}
+                max={20}
+              />
+              <span className="whitespace-nowrap font-medium text-sm w-8 shrink-0 leading-none">
+                {(probability * 100).toFixed(1)}%
+              </span>
             </div>
           </div>
         </div>

@@ -24,11 +24,17 @@ const handleMouse = debounce((setMoreInfo, value) => {
   setMoreInfo(value);
 }, 300);
 
-const BeatmapSet = ({ beatmapSet, touchDevice, showEarly, allModes }) => {
+const BeatmapSet = ({ beatmapSet, touchDevice, showEarly, allModes, probability }) => {
   const [moreInfo, setMoreInfo] = useState(false);
   const ref = createRef();
-  const date = beatmapSet.re && showEarly ? beatmapSet.rde : beatmapSet.rd;
-  const tooltipDate = beatmapSet.re && !showEarly ? beatmapSet.rde : beatmapSet.rd;
+  const date =
+    beatmapSet.p !== null && beatmapSet.p >= probability && showEarly
+      ? beatmapSet.rde
+      : beatmapSet.rd;
+  const tooltipDate =
+    beatmapSet.p !== null && beatmapSet.p >= probability && !showEarly
+      ? beatmapSet.rde
+      : beatmapSet.rd;
 
   const handleMouseEnter = () => {
     if (!touchDevice) {
@@ -151,9 +157,9 @@ const BeatmapSet = ({ beatmapSet, touchDevice, showEarly, allModes }) => {
               theme="black"
               content={
                 <p className="text-center text-xs">
-                  {beatmapSet.p !== null
-                    ? `*Rank Early Probability: ${(beatmapSet.p * 100).toFixed(2)}%`
-                    : "Unknown Probability"}
+                  {`*Rank Early Probability: ${
+                    beatmapSet.p === null ? "Unknown" : (beatmapSet.p * 100).toFixed(2) + "%"
+                  }`}
                   <br />
                   <b>
                     {secToDate(tooltipDate).toLocaleDateString("default", {
@@ -180,11 +186,11 @@ const BeatmapSet = ({ beatmapSet, touchDevice, showEarly, allModes }) => {
                 className="w-min text-yellow font-bold text-xl whitespace-nowrap pointer-events-auto leading-min my-0.5"
               >
                 {formatDate(secToDate(date))}
-                {beatmapSet.re ? (
+                {beatmapSet.p !== null && beatmapSet.p >= probability ? (
                   <>
                     *
                     <div className="text-[11px] font-light inline-block pl-[1px] pt-[2px] align-top">
-                      {(beatmapSet.p * 100).toFixed(0)}%
+                      {(beatmapSet.p * 100).toFixed(probability == 0 ? 2 : 0)}%
                     </div>
                   </>
                 ) : (

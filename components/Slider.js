@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import ReactSlider from "react-slider";
 
-const Slider = ({ setExternalValue, saveValue, defaultValue }) => {
+const Slider = ({ setExternalValue, saveValue, defaultValue, min = 0, max = 100 }) => {
   const [value, setValue] = useState(defaultValue);
 
   useEffect(() => {
@@ -20,6 +20,8 @@ const Slider = ({ setExternalValue, saveValue, defaultValue }) => {
         }}
         onAfterChange={(value) => saveValue(value)}
         value={value}
+        min={min}
+        max={max}
       />
     </div>
   );
