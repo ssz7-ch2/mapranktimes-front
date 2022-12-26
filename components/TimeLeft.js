@@ -27,7 +27,7 @@ const TimeLeft = ({
       for (const beatmapSet of beatmapSets) {
         if (date < secToDate(beatmapSet.rde ?? beatmapSet.rd)) break;
         if (
-          beatmapSet.p !== null &&
+          beatmapSet.p &&
           beatmapSet.p >= probability &&
           date > Math.ceil((beatmapSet.rde * 1000) / 600000) * 600000
         ) {
@@ -61,7 +61,7 @@ const TimeLeft = ({
     const intervalId = setInterval(updateTime, 1000);
 
     return () => clearInterval(intervalId);
-  }, [beatmapSets, setBeatmapSets, filter, showEarly]);
+  }, [beatmapSets, setBeatmapSets, filter, showEarly, probability]);
 
   return (
     <div className={className}>
