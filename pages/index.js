@@ -393,17 +393,6 @@ const Home = () => {
                 </li>
               </ul>
             </div>
-            <div className="flex justify-center mt-2">
-              <ToggleSwitch
-                switchWidth={35}
-                color="#FFDD55"
-                value={showEarly}
-                setValue={setShowEarly}
-                content={<p className="select-none text-sm">Show Early Time</p>}
-                className="whitespace-nowrap gap-2"
-                textAfter
-              />
-            </div>
             <div className="flex gap-1 items-center">
               <span className="whitespace-nowrap text-sm leading-none">Early Cutoff</span>
               <Slider
@@ -417,6 +406,17 @@ const Home = () => {
               <span className="whitespace-nowrap font-medium text-sm w-8 shrink-0 leading-none">
                 {(probability * 100).toFixed(1)}%
               </span>
+            </div>
+            <div className="flex justify-center">
+              <ToggleSwitch
+                switchWidth={35}
+                color="#FFDD55"
+                value={showEarly}
+                setValue={setShowEarly}
+                content={<p className="select-none text-sm">Show Early Time</p>}
+                className="whitespace-nowrap gap-2"
+                textAfter
+              />
             </div>
           </div>
         </div>
