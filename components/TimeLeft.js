@@ -32,6 +32,7 @@ const TimeLeft = ({
           date > Math.ceil((beatmapSet.rde * 1000) / 600000) * 600000
         ) {
           beatmapSet.p = 0;
+          beatmapSet.rde = beatmapSet.rd;
           updateBeatmapSets = true;
         }
       }
