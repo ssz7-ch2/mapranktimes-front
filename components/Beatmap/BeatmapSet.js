@@ -24,11 +24,17 @@ const handleMouse = debounce((setMoreInfo, value) => {
   setMoreInfo(value);
 }, 300);
 
-const BeatmapSet = ({ beatmapSet, touchDevice, showEarly }) => {
+const BeatmapSet = ({ beatmapSet, touchDevice, showEarly, allModes, probability }) => {
   const [moreInfo, setMoreInfo] = useState(false);
   const ref = createRef();
-  const date = beatmapSet.re && showEarly ? beatmapSet.rde : beatmapSet.rd;
-  const tooltipDate = beatmapSet.re && !showEarly ? beatmapSet.rde : beatmapSet.rd;
+  const date =
+    beatmapSet.p !== null && beatmapSet.p >= probability && showEarly
+      ? beatmapSet.rde
+      : beatmapSet.rd;
+  const tooltipDate =
+    beatmapSet.p !== null && beatmapSet.p >= probability && !showEarly
+      ? beatmapSet.rde
+      : beatmapSet.rd;
 
   const handleMouseEnter = () => {
     if (!touchDevice) {
@@ -102,7 +108,31 @@ const BeatmapSet = ({ beatmapSet, touchDevice, showEarly }) => {
               rel="noreferrer"
             >
               <div className="flex flex-col gap-[1.6px]">
-                <h1 className="w-min max-w-full font-bold truncate leading-min">{beatmapSet.t}</h1>
+                <div className="flex gap-1">
+                  {allModes && (
+                    <div className="flex items-center gap-[3px] shrink-0">
+                      {beatmapSet.b
+                        .reduce(
+                          (modes, beatmap) =>
+                            modes.includes(beatmap.m) ? modes : [...modes, beatmap.m],
+                          []
+                        )
+                        .map((mode, i) => (
+                          <img
+                            key={`${mode}${i}`}
+                            src={`/icons/mode${mode}.svg`}
+                            alt="spinner icon"
+                            width={15}
+                            height={15}
+                            className="select-none overflow-hidden"
+                          />
+                        ))}
+                    </div>
+                  )}
+                  <h1 className="w-min max-w-full font-bold truncate leading-min">
+                    {beatmapSet.t}
+                  </h1>
+                </div>
 
                 <h1 className="w-min max-w-full font-light text-xs truncate leading-min">
                   {beatmapSet.a}
@@ -127,10 +157,10 @@ const BeatmapSet = ({ beatmapSet, touchDevice, showEarly }) => {
               theme="black"
               content={
                 <p className="text-center text-xs">
-                  {beatmapSet.re
-                    ? `*May be ranked early (${(beatmapSet.p * 100).toFixed(1)}% chance)`
-                    : ""}
-                  {beatmapSet.re ? <br /> : null}
+                  {`*Rank Early Probability: ${
+                    beatmapSet.p === null ? "Unknown" : (beatmapSet.p * 100).toFixed(2) + "%"
+                  }`}
+                  <br />
                   <b>
                     {secToDate(tooltipDate).toLocaleDateString("default", {
                       year: "numeric",
@@ -156,11 +186,11 @@ const BeatmapSet = ({ beatmapSet, touchDevice, showEarly }) => {
                 className="w-min text-yellow font-bold text-xl whitespace-nowrap pointer-events-auto leading-min my-0.5"
               >
                 {formatDate(secToDate(date))}
-                {beatmapSet.re ? (
+                {beatmapSet.p !== null && beatmapSet.p >= probability ? (
                   <>
                     *
                     <div className="text-[11px] font-light inline-block pl-[1px] pt-[2px] align-top">
-                      {(beatmapSet.p * 100).toFixed(0)}%
+                      {(beatmapSet.p * 100).toFixed(probability == 0 ? 2 : 0)}%
                     </div>
                   </>
                 ) : (
@@ -186,10 +216,9 @@ const BeatmapSet = ({ beatmapSet, touchDevice, showEarly }) => {
                   alt="spinner icon"
                   width={18}
                   height={18}
-                  className="select-none"
+                  className="select-none overflow-hidden"
                 />
 
-                {/* change hover to use actual div instead of title */}
                 <h2 className="w-min whitespace-nowrap text-xs">{getDiffString(beatmapSet)}</h2>
               </div>
 
@@ -200,7 +229,7 @@ const BeatmapSet = ({ beatmapSet, touchDevice, showEarly }) => {
                   alt="length icon"
                   width={18}
                   height={18}
-                  className="select-none"
+                  className="select-none overflow-hidden"
                 />
                 <h2 className="w-min text-xs">{secToTime(beatmapSet.b[0].l)}</h2>
               </div>
@@ -223,10 +252,11 @@ const BeatmapSet = ({ beatmapSet, touchDevice, showEarly }) => {
 
       {/* Beatmap Hover More Info */}
       <BeatmapsInfo
-        beatmaps={beatmapSet.b /* TODO: filter beatmaps by mode */}
+        beatmaps={beatmapSet.b.sort((a, b) => a.m - b.m)}
         moreInfo={moreInfo}
         handleMouseEnter={handleMouseEnter}
         handleMouseLeave={handleMouseLeave}
+        allModes={allModes}
       />
     </div>
   );

@@ -36,8 +36,24 @@ const Home = () => {
   const [filterOn, setFilterOn] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [defaultVolume, setDefaultVolume] = useState(70);
+  const [probability, setProbability] = useState(0.01);
   const [showEarly, setShowEarly] = useState(null);
+  const [selectedMode, _setSelectedMode] = useState(0); // -1 All, 0 osu, 1 taiko, 2 catch, 3 mania
   const volumeSliderRef = useRef();
+
+  const modeList = ["osu", "taiko", "catch", "mania"];
+
+  const setSelectedMode = (mode) => {
+    _setSelectedMode((prevMode) => {
+      if (prevMode === mode && mode !== -1) {
+        localStorage.setItem("mode", -1);
+        return -1;
+      } else {
+        localStorage.setItem("mode", mode);
+        return mode;
+      }
+    });
+  };
 
   const getLocalBeatmapSets = () => {
     const localBeatmapSets = localStorage.getItem("beatmapSets");
@@ -67,7 +83,9 @@ const Home = () => {
   };
 
   const connectServer = () => {
-    let events = new EventSource("https://mapranktimes.onrender.com/beatmapsets?stream");
+    const API_URL =
+      process.env.API_URL || `http://${window.location.hostname}:5000/beatmapsets?stream`;
+    let events = new EventSource(API_URL);
 
     events.onmessage = (event) => {
       const updatedBeatmapSets = JSON.parse(event.data);
@@ -91,7 +109,7 @@ const Home = () => {
             "An error occurred while attempting to connect to server. Trying again in 1 min..."
           );
           await new Promise((resolve) => setTimeout(resolve, 60000));
-          events = new EventSource("https://mapranktimes.onrender.com/beatmapsets?stream");
+          events = new EventSource(API_URL);
           events.onerror = handleError;
           break;
       }
@@ -133,6 +151,16 @@ const Home = () => {
       setShowEarly(false);
     }
 
+    const probability = localStorage.getItem("probability");
+    if (probability) {
+      setProbability(parseFloat(probability));
+    }
+
+    const mode = localStorage.getItem("mode");
+    if (mode) {
+      _setSelectedMode(parseInt(mode));
+    }
+
     // set up SSE connection and get beatmapSets
     const events = connectServer();
 
@@ -167,12 +195,59 @@ const Home = () => {
       <main className="min-h-screen font-sans flex flex-col w-full items-center text-center px-3 md:px-5 mx-auto md:max-w-[1024px] max-w-[448px]">
         <TimeLeft
           beatmapSets={beatmapSets}
-          filter={filterOn && filter.applyFilter ? filter.applyFilter : () => true}
+          filter={(beatmapSet) => {
+            return (
+              (selectedMode === -1 || beatmapSet.b.some((beatmap) => beatmap.m == selectedMode)) &&
+              (filterOn && filter.applyFilter ? filter.applyFilter(beatmapSet) : true)
+            );
+          }}
           setBeatmapSets={setBeatmapSets}
-          className="mt-12 mb-6 md:mt-16 md:mb-9"
+          className="mt-10 mb-5 md:mt-14 md:mb-7"
           onClick={() => setDialogOpen(!dialogOpen)}
           showEarly={showEarly}
+          probability={probability}
         />
+
+        <div className="flex items-center leading-none mb-2 md:mb-3 gap-2 font-light text-[17px]">
+          <button
+            title={`${beatmapSets?.length ?? 0} maps`}
+            className="opacity-60 hover:opacity-100 transition-opacity"
+            style={{
+              opacity: selectedMode === -1 ? 1 : undefined,
+              color: selectedMode === -1 ? "#FFDD55" : undefined,
+            }}
+            onClick={() => setSelectedMode(-1)}
+          >
+            Any
+          </button>
+          {modeList.map((mode, i) => (
+            <button
+              title={`${
+                beatmapSets?.filter((beatmapSet) => beatmapSet.b.some((beatmap) => beatmap.m == i))
+                  .length ?? 0
+              } maps`}
+              key={`${mode}${i}`}
+              className="opacity-60 hover:opacity-100 transition-opacity"
+              style={{
+                opacity: selectedMode === i ? 1 : undefined,
+                filter:
+                  selectedMode === i
+                    ? "brightness(0) saturate(100%) invert(75%) sepia(80%) saturate(326%) hue-rotate(358deg) brightness(101%) contrast(105%)"
+                    : undefined,
+              }}
+              onClick={() => (selectedMode === i ? setSelectedMode(-1) : setSelectedMode(i))}
+            >
+              <img
+                src={`/icons/mode${i}.svg`}
+                alt="spinner icon"
+                width={18}
+                height={18}
+                className="select-none overflow-hidden"
+              />
+            </button>
+          ))}
+        </div>
+
         <div className="flex flex-row gap-5 mb-3 md:mb-5 w-full items-center justify-center">
           <div className="hidden md:block">
             <ToggleSwitch
@@ -196,14 +271,29 @@ const Home = () => {
 
         <div className="flex-grow w-full">
           {beatmapSets?.length === 0 ? (
-            <h1>Server dead or restarting (takes like 1 min if restarting)</h1>
+            <h1>Server dead or restarting (takes like 5 min if restarting)</h1>
           ) : (
             <BeatmapList
-              beatmapSets={beatmapSets}
+              beatmapSets={
+                selectedMode === -1
+                  ? beatmapSets
+                  : beatmapSets
+                      ?.filter((beatmapSet) =>
+                        beatmapSet.b.some((beatmap) => beatmap.m == selectedMode)
+                      )
+                      .map((beatmapSet) => {
+                        return {
+                          ...beatmapSet,
+                          b: beatmapSet.b.filter((beatmap) => beatmap.m == selectedMode),
+                        };
+                      })
+              }
               filter={filterOn && filter.applyFilter ? filter.applyFilter : () => true}
               touchDevice={touchDevice}
               largeScreen={largeScreen}
               showEarly={showEarly}
+              allModes={selectedMode === -1}
+              probability={probability}
             />
           )}
         </div>
@@ -303,7 +393,21 @@ const Home = () => {
                 </li>
               </ul>
             </div>
-            <div className="flex justify-center mt-2">
+            <div className="flex gap-1 items-center">
+              <span className="whitespace-nowrap text-sm leading-none">Early Cutoff</span>
+              <Slider
+                setExternalValue={(value) => setProbability(value / 100 / 2)}
+                saveValue={(value) => {
+                  localStorage.setItem("probability", value / 100 / 2);
+                }}
+                defaultValue={probability * 2 * 100}
+                max={20}
+              />
+              <span className="whitespace-nowrap font-medium text-sm w-8 shrink-0 leading-none">
+                {(probability * 100).toFixed(1)}%
+              </span>
+            </div>
+            <div className="flex justify-center">
               <ToggleSwitch
                 switchWidth={35}
                 color="#FFDD55"

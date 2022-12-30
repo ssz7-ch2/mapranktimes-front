@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
 import { msToTime, secToDate } from "../utils/timeString";
 
-const TimeLeft = ({ beatmapSets, filter, setBeatmapSets, className, onClick, showEarly }) => {
+const TimeLeft = ({
+  beatmapSets,
+  filter,
+  setBeatmapSets,
+  className,
+  onClick,
+  showEarly,
+  probability,
+}) => {
   const [timeLeft, setTimeLeft] = useState(NaN);
   const [time, setTime] = useState(null);
 
@@ -18,8 +26,13 @@ const TimeLeft = ({ beatmapSets, filter, setBeatmapSets, className, onClick, sho
       let updateBeatmapSets = false;
       for (const beatmapSet of beatmapSets) {
         if (date < secToDate(beatmapSet.rde ?? beatmapSet.rd)) break;
-        if (beatmapSet.re && date > Math.ceil((beatmapSet.rde * 1000) / 600000) * 600000) {
-          beatmapSet.re = false;
+        if (
+          beatmapSet.p &&
+          beatmapSet.p >= probability &&
+          date > Math.ceil((beatmapSet.rde * 1000) / 600000) * 600000
+        ) {
+          beatmapSet.p = 0;
+          beatmapSet.rde = beatmapSet.rd;
           updateBeatmapSets = true;
         }
       }
@@ -39,7 +52,8 @@ const TimeLeft = ({ beatmapSets, filter, setBeatmapSets, className, onClick, sho
       }
 
       let rankDate = beatmapSet.rd * 1000;
-      if (showEarly && beatmapSet.re) rankDate = beatmapSet.rde * 1000;
+      if (showEarly && beatmapSet.p !== null && beatmapSet.p >= probability)
+        rankDate = beatmapSet.rde * 1000;
 
       setTimeLeft(Math.floor(rankDate / 60000) * 60000 - date);
     };
@@ -48,7 +62,7 @@ const TimeLeft = ({ beatmapSets, filter, setBeatmapSets, className, onClick, sho
     const intervalId = setInterval(updateTime, 1000);
 
     return () => clearInterval(intervalId);
-  }, [beatmapSets, setBeatmapSets, filter, showEarly]);
+  }, [beatmapSets, setBeatmapSets, filter, showEarly, probability]);
 
   return (
     <div className={className}>
