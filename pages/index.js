@@ -83,8 +83,9 @@ const Home = () => {
   };
 
   const connectServer = () => {
-    const API_URL =
-      process.env.API_URL || `http://${window.location.hostname}:5000/beatmapsets?stream`;
+    const API_URL = `${
+      process.env.NEXT_PUBLIC_API_URL || `http://${window.location.hostname}:5000`
+    }/beatmapsets?stream`;
     let events = new EventSource(API_URL);
 
     events.onmessage = (event) => {
