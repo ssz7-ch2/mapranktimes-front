@@ -38,10 +38,11 @@ const TimeLeft = ({
       }
       if (updateBeatmapSets) setBeatmapSets([...beatmapSets]);
 
-      let beatmapSet = beatmapSets[0];
+      // filter out unresolved maps
+      let beatmapSet = beatmapSets.filter((b) => !b.u)[0];
 
       if (filter !== null) {
-        const filteredSets = beatmapSets.filter(filter);
+        const filteredSets = beatmapSets.filter(filter).filter((b) => !b.u);
 
         if (filteredSets.length === 0) {
           setTimeLeft(NaN);

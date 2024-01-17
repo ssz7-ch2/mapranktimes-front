@@ -66,7 +66,10 @@ const BeatmapSet = ({ beatmapSet, touchDevice, showEarly, allModes, probability 
         setMoreInfo(false);
       }}
     >
-      <div className="flex flex-row w-full h-28 md:h-36 overflow-hidden rounded-[12px]">
+      <div
+        className="flex flex-row w-full h-28 md:h-36 overflow-hidden rounded-[12px]"
+        style={{ filter: beatmapSet.u ? "brightness(0.5)" : null }}
+      >
         {/* List Square Image */}
         <div
           className="relative flex-shrink-0 w-28 md:w-36 cursor-pointer"
@@ -157,9 +160,11 @@ const BeatmapSet = ({ beatmapSet, touchDevice, showEarly, allModes, probability 
               theme="black"
               content={
                 <p className="text-center text-xs">
-                  {`*Rank Early Probability: ${
-                    beatmapSet.p === null ? "Unknown" : (beatmapSet.p * 100).toFixed(2) + "%"
-                  }`}
+                  {beatmapSet.u
+                    ? "Will be ranked when mapper resolves mod"
+                    : `*Rank Early Probability: ${
+                        beatmapSet.p === null ? "Unknown" : (beatmapSet.p * 100).toFixed(2) + "%"
+                      }`}
                   <br />
                   <b>
                     {secToDate(tooltipDate).toLocaleDateString("default", {
@@ -185,7 +190,7 @@ const BeatmapSet = ({ beatmapSet, touchDevice, showEarly, allModes, probability 
                 data-tip
                 className="w-min text-yellow font-bold text-xl whitespace-nowrap pointer-events-auto leading-min my-0.5"
               >
-                {formatDate(secToDate(date))}
+                {beatmapSet.u ? "Unresolved mod" : formatDate(secToDate(date))}
                 {beatmapSet.p !== null && beatmapSet.p >= probability ? (
                   <>
                     *
@@ -257,6 +262,7 @@ const BeatmapSet = ({ beatmapSet, touchDevice, showEarly, allModes, probability 
         handleMouseEnter={handleMouseEnter}
         handleMouseLeave={handleMouseLeave}
         allModes={allModes}
+        unresolved={beatmapSet.u}
       />
     </div>
   );

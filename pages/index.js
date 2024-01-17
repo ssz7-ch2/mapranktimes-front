@@ -356,6 +356,7 @@ const Home = () => {
             </p>
             <hr className="border-neutral-400 mt-3" />
             <h2 className="text-xl mt-3 font-medium">Rank Early</h2>
+            <p className="text-yellow">*Probabilities are no longer accurate*</p>
             <p>
               Maps with <span className="text-yellow font-medium">*</span> are likely to be ranked
               early. The number after <span className="text-yellow font-medium">*</span> is the
@@ -368,7 +369,7 @@ const Home = () => {
               <ul className="list-disc ml-4 marker:text-neutral-400">
                 <li>All times are in local time</li>
                 <li>
-                  Page usually auto updates within 5 sec of rank event and within 5 min for other
+                  Page usually auto updates within 10 sec of rank event and within 5 min for other
                   events
                 </li>
                 <li>Most maps are ranked within 8 minutes (~99% of maps)</li>
@@ -380,16 +381,6 @@ const Home = () => {
                     rel="noreferrer"
                   >
                     Old Google Sheets Link
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://github.com/ssz7-ch2/mapranktimes-back/blob/main/README.md"
-                    target="_blank"
-                    className="text-neutral-400"
-                    rel="noreferrer"
-                  >
-                    In depth explanation of how rank times are calculated
                   </a>
                 </li>
               </ul>

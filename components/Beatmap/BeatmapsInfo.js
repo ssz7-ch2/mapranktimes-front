@@ -4,16 +4,25 @@ import { secToTime } from "../../utils/timeString";
 import useDelayUnmount from "../useDelayUnmount";
 import mapDiffColor from "../../utils/mapDiffColor";
 
-const BeatmapsInfo = ({ beatmaps, moreInfo, handleMouseEnter, handleMouseLeave, allModes }) => {
+const BeatmapsInfo = ({
+  beatmaps,
+  moreInfo,
+  handleMouseEnter,
+  handleMouseLeave,
+  allModes,
+  unresolved,
+}) => {
   const shouldRender = useDelayUnmount(moreInfo, 150);
 
   const mountedStyle = {
     opacity: 1,
     animation: "fadeIn 200ms ease-in-out",
+    filter: unresolved ? "brightness(0.5)" : null,
   };
   const unmountedStyle = {
     opacity: 0,
     transition: "opacity 150ms ease-in-out",
+    filter: unresolved ? "brightness(0.5)" : null,
   };
 
   return (
