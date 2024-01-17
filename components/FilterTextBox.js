@@ -28,10 +28,16 @@ const isNumeric = (str) => !isNaN(str) && !isNaN(parseFloat(str));
 const stringToFilter = (line) => {
   const filterStrings = line.toLowerCase().trim().split(" ");
   const filters = [];
+  let filterUnresolved = false;
+  console.log("test");
 
   const validStrings = [];
   filterStrings.forEach((filterString) => {
     if (filterString.length < 4) return;
+    if (filterString === "unresolved") {
+      filterUnresolved = true;
+      return;
+    }
     const operator = filterString.match(/[<>=]+/);
     if (operator && operator[0] in comparisonOperators) {
       const [param, value] = filterString.split(operator[0]);
@@ -46,11 +52,12 @@ const stringToFilter = (line) => {
 
   if (validStrings.length !== 0 || line.length === 0)
     localStorage.setItem("filter", validStrings.join(" "));
-  if (filters.length === 0) return { string: null, applyFilter: null };
+  if (filters.length === 0 && !filterUnresolved) return { string: null, applyFilter: null };
 
   return {
     string: validStrings.join(" "),
     applyFilter: function (beatmapSet) {
+      if (filterUnresolved) return beatmapSet.u;
       return beatmapSet?.b.some((beatmap) => filters.every((filter) => filter(beatmap)));
     },
   };
