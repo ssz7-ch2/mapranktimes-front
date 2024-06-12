@@ -33,13 +33,18 @@ const Home = () => {
   const [touchDevice, setTouchDevice] = useState(false);
   const [largeScreen, setLargeScreen] = useState(true);
   const [filter, setFilter] = useState({ string: null, applyFilter: null });
-  const [filterOn, setFilterOn] = useState(false);
+  const [filterOn, _setFilterOn] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [defaultVolume, setDefaultVolume] = useState(70);
   const [probability, setProbability] = useState(0.01);
   const [showEarly, setShowEarly] = useState(null);
   const [selectedMode, _setSelectedMode] = useState(0); // -1 All, 0 osu, 1 taiko, 2 catch, 3 mania
   const volumeSliderRef = useRef();
+
+  const setFilterOn = (value) => {
+    _setFilterOn(value);
+    localStorage.setItem("filterOn", value);
+  };
 
   const modeList = ["osu", "taiko", "catch", "mania"];
 
@@ -144,6 +149,11 @@ const Home = () => {
   useEffect(() => {
     // First attempt to get beatmapSets from localStorage
     getLocalBeatmapSets();
+
+    const filterOn = localStorage.getItem("filterOn");
+    if (filterOn) {
+      setFilterOn(filterOn == "true");
+    }
 
     const showEarly = localStorage.getItem("showEarly");
     if (showEarly) {
@@ -342,7 +352,7 @@ const Home = () => {
             <h2 className="text-xl mt-3 font-medium">Filter</h2>
             <p>
               <span className="text-neutral-300">Filter terms: </span>
-              <b>spin</b>, <b>stars</b>, <b>len</b>
+              <b>spin</b>, <b>stars</b>, <b>len</b>, <b>unresolved</b>
             </p>
             <div>
               <span className="text-sm text-neutral-300">Example: </span>

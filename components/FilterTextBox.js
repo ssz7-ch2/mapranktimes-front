@@ -36,6 +36,7 @@ const stringToFilter = (line) => {
     if (filterString.length < 4) return;
     if (filterString === "unresolved") {
       filterUnresolved = true;
+      validStrings.push(filterString);
       return;
     }
     const operator = filterString.match(/[<>=]+/);
