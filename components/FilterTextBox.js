@@ -15,12 +15,12 @@ const comparisonOperators = {
 
 // beatmap[paramMap[param]]
 const paramMap = {
-  spin: "s",
-  spinners: "s",
+  spin: "spin",
+  spinners: "spin",
   sr: "sr",
   stars: "sr",
-  len: "l",
-  length: "l",
+  len: "len",
+  length: "len",
 };
 
 const isNumeric = (str) => !isNaN(str) && !isNaN(parseFloat(str));
@@ -29,7 +29,6 @@ const stringToFilter = (line) => {
   const filterStrings = line.toLowerCase().trim().split(" ");
   const filters = [];
   let filterUnresolved = false;
-  console.log("test");
 
   const validStrings = [];
   filterStrings.forEach((filterString) => {
@@ -58,8 +57,8 @@ const stringToFilter = (line) => {
   return {
     string: validStrings.join(" "),
     applyFilter: function (beatmapSet) {
-      if (filterUnresolved) return beatmapSet.u;
-      return beatmapSet?.b.some((beatmap) => filters.every((filter) => filter(beatmap)));
+      if (filterUnresolved) return beatmapSet.unresolved;
+      return beatmapSet?.beatmaps.some((beatmap) => filters.every((filter) => filter(beatmap)));
     },
   };
 };

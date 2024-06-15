@@ -9,6 +9,7 @@ import { audioPlayer } from "../utils/audio";
 import Slider from "../components/Slider";
 import { debounce } from "lodash";
 import { secToDate } from "../utils/timeString";
+import supabase from "../utils/supabase";
 
 const detectMediaChange = (mediaQuery, setValue, callback) => {
   const mql = matchMedia(mediaQuery);
@@ -64,10 +65,10 @@ const Home = () => {
     const localBeatmapSets = localStorage.getItem("beatmapSets");
     if (localBeatmapSets) {
       const beatmapSets = JSON.parse(localBeatmapSets);
-      if (beatmapSets[0].rd) {
+      if (beatmapSets[0].rank_date) {
         setBeatmapSets(
           beatmapSets.filter(
-            (beatmapSet) => Date.now() - secToDate(beatmapSet.rd).getTime() < 10 * 60000
+            (beatmapSet) => Date.now() - secToDate(beatmapSet.rank_date).getTime() < 10 * 60000
           )
         );
         console.log("local beatmapsets loaded");
@@ -85,45 +86,6 @@ const Home = () => {
       localStorage.setItem("visited", "");
       setDialogOpen(true);
     }
-  };
-
-  const connectServer = () => {
-    const API_URL = `${
-      process.env.NEXT_PUBLIC_API_URL || `http://${window.location.hostname}:5000`
-    }/beatmapsets?stream`;
-    let events = new EventSource(API_URL);
-
-    events.onmessage = (event) => {
-      const updatedBeatmapSets = JSON.parse(event.data);
-      if (updatedBeatmapSets.length > 0) {
-        setBeatmapSets(updatedBeatmapSets);
-        localStorage.setItem("beatmapSets", event.data);
-        console.log("beatmapsets updated", new Date().toISOString());
-      }
-    };
-
-    const handleError = async (event) => {
-      switch (event.target.readyState) {
-        case EventSource.CONNECTING:
-          console.log(
-            "An error occurred while attempting to connect to server. Reconnecting in 10 sec..."
-          );
-          await new Promise((resolve) => setTimeout(resolve, 10000));
-          break;
-        case EventSource.CLOSED:
-          console.log(
-            "An error occurred while attempting to connect to server. Trying again in 1 min..."
-          );
-          await new Promise((resolve) => setTimeout(resolve, 60000));
-          events = new EventSource(API_URL);
-          events.onerror = handleError;
-          break;
-      }
-    };
-
-    events.onerror = handleError;
-
-    return events;
   };
 
   const audioSetup = () => {
@@ -172,8 +134,78 @@ const Home = () => {
       _setSelectedMode(parseInt(mode));
     }
 
-    // set up SSE connection and get beatmapSets
-    const events = connectServer();
+    const connectDatabase = () => {
+      supabase
+        .channel("map-updates")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "updates" },
+          async (payload) => {
+            //console.log(payload);
+            if (payload.new.deleted_maps.length + payload.new.updated_maps.length === 0) return;
+
+            let data;
+            if (payload.new.updated_maps.length > 0) {
+              const res = await fetch("/api/getupdated", {
+                method: "POST",
+                headers: {
+                  Accept: "application/json",
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(payload.new.updated_maps),
+              });
+              const updatedMaps = await res.json();
+
+              data = updatedMaps;
+            }
+
+            setBeatmapSets((beatmapSets) => {
+              let updatedBeatmapSets = [...beatmapSets];
+              if (payload.new.deleted_maps.length > 0) {
+                updatedBeatmapSets = updatedBeatmapSets.filter(
+                  (beatmapSet) => !payload.new.deleted_maps.includes(beatmapSet.id)
+                );
+              }
+
+              if (data) {
+                data.forEach((updatedBeatmapSet) => {
+                  updatedBeatmapSet.beatmaps = JSON.parse(updatedBeatmapSet.beatmaps);
+                  const index = updatedBeatmapSets.findIndex(
+                    (beatmapSet) => beatmapSet.id === updatedBeatmapSet.id
+                  );
+                  if (index >= 0) {
+                    updatedBeatmapSets[index] = updatedBeatmapSet;
+                  } else {
+                    // new qualified map
+                    updatedBeatmapSets.push(updatedBeatmapSet);
+                  }
+                });
+
+                // it's possible for the maps to become out of order
+                updatedBeatmapSets.sort((a, b) => a.rank_date_early - b.rank_date_early);
+              }
+
+              return updatedBeatmapSets;
+            });
+          }
+        )
+        .subscribe();
+    };
+
+    connectDatabase();
+
+    const getBeatmapSets = async () => {
+      const res = await fetch("/api/getqualified");
+      const data = await res.json();
+
+      data.forEach((updatedBeatmapSet) => {
+        updatedBeatmapSet.beatmaps = JSON.parse(updatedBeatmapSet.beatmaps);
+      });
+
+      setBeatmapSets(data.sort((a, b) => a.rank_date_early - b.rank_date_early));
+    };
+
+    getBeatmapSets();
 
     // add event listener for detecting if user is on touch device
     detectMediaChange("(pointer:coarse)", setTouchDevice);
@@ -186,7 +218,6 @@ const Home = () => {
     newVisitor();
 
     return () => {
-      events.close();
       audioPlayer.stop();
     };
   }, []);
@@ -208,7 +239,8 @@ const Home = () => {
           beatmapSets={beatmapSets}
           filter={(beatmapSet) => {
             return (
-              (selectedMode === -1 || beatmapSet.b.some((beatmap) => beatmap.m == selectedMode)) &&
+              (selectedMode === -1 ||
+                beatmapSet.beatmaps.some((beatmap) => beatmap.mode == selectedMode)) &&
               (filterOn && filter.applyFilter ? filter.applyFilter(beatmapSet) : true)
             );
           }}
@@ -234,8 +266,9 @@ const Home = () => {
           {modeList.map((mode, i) => (
             <button
               title={`${
-                beatmapSets?.filter((beatmapSet) => beatmapSet.b.some((beatmap) => beatmap.m == i))
-                  .length ?? 0
+                beatmapSets?.filter((beatmapSet) =>
+                  beatmapSet.beatmaps.some((beatmap) => beatmap.mode == i)
+                ).length ?? 0
               } maps`}
               key={`${mode}${i}`}
               className="opacity-60 hover:opacity-100 transition-opacity"
@@ -281,21 +314,21 @@ const Home = () => {
         </div>
 
         <div className="flex-grow w-full">
-          {beatmapSets?.length === 0 ? (
-            <h1>Server dead or restarting (takes like 5 min if restarting)</h1>
-          ) : (
+          {
             <BeatmapList
               beatmapSets={
                 selectedMode === -1
                   ? beatmapSets
                   : beatmapSets
                       ?.filter((beatmapSet) =>
-                        beatmapSet.b.some((beatmap) => beatmap.m == selectedMode)
+                        beatmapSet.beatmaps.some((beatmap) => beatmap.mode == selectedMode)
                       )
                       .map((beatmapSet) => {
                         return {
                           ...beatmapSet,
-                          b: beatmapSet.b.filter((beatmap) => beatmap.m == selectedMode),
+                          beatmaps: beatmapSet.beatmaps.filter(
+                            (beatmap) => beatmap.mode == selectedMode
+                          ),
                         };
                       })
               }
@@ -306,7 +339,7 @@ const Home = () => {
               allModes={selectedMode === -1}
               probability={probability}
             />
-          )}
+          }
         </div>
 
         <footer className="mb-2 -mt-1 md:-mt-3 w-full">
@@ -366,7 +399,6 @@ const Home = () => {
             </p>
             <hr className="border-neutral-400 mt-3" />
             <h2 className="text-xl mt-3 font-medium">Rank Early</h2>
-            <p className="text-yellow">*Probabilities are no longer accurate*</p>
             <p>
               Maps with <span className="text-yellow font-medium">*</span> are likely to be ranked
               early. The number after <span className="text-yellow font-medium">*</span> is the
@@ -378,10 +410,7 @@ const Home = () => {
             <div className="mx-auto text-left text-sm">
               <ul className="list-disc ml-4 marker:text-neutral-400">
                 <li>All times are in local time</li>
-                <li>
-                  Page usually auto updates within 10 sec of rank event and within 5 min for other
-                  events
-                </li>
+                <li>Page updates on minutes 5, 10, 25, 30, 45, 50</li>
                 <li>Most maps are ranked within 8 minutes (~99% of maps)</li>
                 <li>
                   <a

@@ -40,7 +40,7 @@ const BeatmapsInfo = ({
         >
           <div className=" bg-[#353535] rounded-b-[12px] p-2 text-xs font-light text-left grid grid-cols-[max-content_max-content_max-content_auto] gap-y-0.5 gap-x-2">
             {beatmaps
-              .sort((a, b) => a.m - b.m)
+              .sort((a, b) => a.mode - b.mode)
               .map((beatmap, i) => (
                 <React.Fragment key={`${i}${beatmap.id}`}>
                   <div className="flex flex-row gap-1 items-center">
@@ -51,7 +51,7 @@ const BeatmapsInfo = ({
                       height={14}
                       className="select-none overflow-hidden"
                     />
-                    <p>{beatmap.s}</p>
+                    <p>{beatmap.spin}</p>
                   </div>
                   <div className="flex flex-row gap-1 items-center">
                     <img
@@ -61,7 +61,7 @@ const BeatmapsInfo = ({
                       height={14}
                       className="select-none overflow-hidden"
                     />
-                    <p>{secToTime(beatmap.l)}</p>
+                    <p>{secToTime(beatmap.len)}</p>
                   </div>
                   <p
                     className="rounded-full pl-1 pr-1.5 font-bold"
@@ -75,14 +75,14 @@ const BeatmapsInfo = ({
                   <div className="flex flex-row gap-1 items-center overflow-hidden">
                     {allModes && (
                       <img
-                        src={`/icons/mode${beatmap.m}.svg`}
+                        src={`/icons/mode${beatmap.mode}.svg`}
                         alt="spinner icon"
                         width={14}
                         height={14}
                         className="select-none overflow-hidden"
                       />
                     )}
-                    <p className="font-normal truncate">{beatmap.v}</p>
+                    <p className="font-normal truncate">{beatmap.ver}</p>
                   </div>
                 </React.Fragment>
               ))}
