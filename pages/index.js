@@ -150,10 +150,7 @@ const Home = () => {
                 setTimeout(resolve, Math.floor(Math.random() * 10000))
               );
 
-              const params = new URLSearchParams();
-              payload.new.updated_maps.forEach((mapId) => params.append("map_id[]", mapId));
-
-              const res = await fetch("/api/getupdated?" + params);
+              const res = await fetch("/api/getupdated");
               const updatedMaps = await res.json();
 
               data = updatedMaps;
