@@ -3,7 +3,12 @@ import { createClient } from "@supabase/supabase-js";
 const handler = async (req, res) => {
   res.setHeader("Cache-Control", "s-maxage=150");
 
-  const updatedMaps = req.body;
+  const updatedMaps = req.query["map_id[]"]?.map((id) => parseInt(id));
+
+  if (!updatedMaps) {
+    res.status(404).json({ error: `Failed to get updated maps.` });
+    return;
+  }
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,

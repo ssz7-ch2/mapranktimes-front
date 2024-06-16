@@ -147,17 +147,13 @@ const Home = () => {
             let data;
             if (payload.new.updated_maps.length > 0) {
               await new Promise((resolve) =>
-                setTimeout(resolve, Math.floor(Math.random() * 15000))
+                setTimeout(resolve, Math.floor(Math.random() * 10000))
               );
 
-              const res = await fetch("/api/getupdated", {
-                method: "POST",
-                headers: {
-                  Accept: "application/json",
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify(payload.new.updated_maps),
-              });
+              const params = new URLSearchParams();
+              payload.new.updated_maps.forEach((mapId) => params.append("map_id[]", mapId));
+
+              const res = await fetch("/api/getupdated?" + params);
               const updatedMaps = await res.json();
 
               data = updatedMaps;
