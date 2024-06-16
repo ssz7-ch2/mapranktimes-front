@@ -12,6 +12,8 @@ const handler = async (req, res) => {
 
   const { data, error } = await supabase.from("beatmapsets").select("*").in("id", updatedMaps);
 
+  console.log("getupdated");
+
   if (!data || error) {
     res.status(404).json({ error: `Failed to get updated maps.` });
   } else {

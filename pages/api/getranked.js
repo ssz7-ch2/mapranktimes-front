@@ -10,6 +10,8 @@ const handler = async (req, res) => {
 
   const { data, error } = await supabase.from("beatmapsets").select("*").is("queue_date", null);
 
+  console.log("getranked");
+
   if (!data || error) {
     res.status(404).json({ error: `Failed to get ranked maps.` });
   } else {
