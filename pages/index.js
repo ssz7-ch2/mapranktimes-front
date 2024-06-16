@@ -146,6 +146,10 @@ const Home = () => {
 
             let data;
             if (payload.new.updated_maps.length > 0) {
+              await new Promise((resolve) =>
+                setTimeout(resolve, Math.floor(Math.random() * 15000))
+              );
+
               const res = await fetch("/api/getupdated", {
                 method: "POST",
                 headers: {
