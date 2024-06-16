@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
 const handler = async (req, res) => {
-  res.setHeader("Cache-Control", "s-maxage=300");
+  res.setHeader("Cache-Control", "s-maxage=150");
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
