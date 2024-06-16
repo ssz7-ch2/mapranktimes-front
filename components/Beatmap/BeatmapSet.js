@@ -16,9 +16,9 @@ const formatDate = (date) => {
 };
 
 const getDiffString = (beatmapSet) =>
-  `${beatmapSet.b.filter((beatmap) => beatmap.s > 0).length} / ${beatmapSet.b.length} Diff${
-    beatmapSet.b.length == 1 ? "" : "s"
-  }`;
+  `${beatmapSet.beatmaps.filter((beatmap) => beatmap.spin > 0).length} / ${
+    beatmapSet.beatmaps.length
+  } Diff${beatmapSet.beatmaps.length == 1 ? "" : "s"}`;
 
 const handleMouse = debounce((setMoreInfo, value) => {
   setMoreInfo(value);
@@ -28,13 +28,13 @@ const BeatmapSet = ({ beatmapSet, touchDevice, showEarly, allModes, probability 
   const [moreInfo, setMoreInfo] = useState(false);
   const ref = createRef();
   const date =
-    beatmapSet.p !== null && beatmapSet.p >= probability && showEarly
-      ? beatmapSet.rde
-      : beatmapSet.rd;
+    beatmapSet.probability !== null && beatmapSet.probability >= probability && showEarly
+      ? beatmapSet.rank_date_early
+      : beatmapSet.rank_date;
   const tooltipDate =
-    beatmapSet.p !== null && beatmapSet.p >= probability && !showEarly
-      ? beatmapSet.rde
-      : beatmapSet.rd;
+    beatmapSet.probability !== null && beatmapSet.probability >= probability && !showEarly
+      ? beatmapSet.rank_date_early
+      : beatmapSet.rank_date;
 
   const handleMouseEnter = () => {
     if (!touchDevice) {
@@ -68,7 +68,7 @@ const BeatmapSet = ({ beatmapSet, touchDevice, showEarly, allModes, probability 
     >
       <div
         className="flex flex-row w-full h-28 md:h-36 overflow-hidden rounded-[12px]"
-        style={{ filter: beatmapSet.u ? "brightness(0.5)" : null }}
+        style={{ filter: beatmapSet.unresolved ? "brightness(0.5)" : null }}
       >
         {/* List Square Image */}
         <div
@@ -114,12 +114,13 @@ const BeatmapSet = ({ beatmapSet, touchDevice, showEarly, allModes, probability 
                 <div className="flex gap-1">
                   {allModes && (
                     <div className="flex items-center gap-[3px] shrink-0">
-                      {beatmapSet.b
+                      {beatmapSet.beatmaps
                         .reduce(
                           (modes, beatmap) =>
-                            modes.includes(beatmap.m) ? modes : [...modes, beatmap.m],
+                            modes.includes(beatmap.mode) ? modes : [...modes, beatmap.mode],
                           []
                         )
+                        .sort()
                         .map((mode, i) => (
                           <img
                             key={`${mode}${i}`}
@@ -133,12 +134,12 @@ const BeatmapSet = ({ beatmapSet, touchDevice, showEarly, allModes, probability 
                     </div>
                   )}
                   <h1 className="w-min max-w-full font-bold truncate leading-min">
-                    {beatmapSet.t}
+                    {beatmapSet.title}
                   </h1>
                 </div>
 
                 <h1 className="w-min max-w-full font-light text-xs truncate leading-min">
-                  {beatmapSet.a}
+                  {beatmapSet.artist}
                 </h1>
               </div>
             </a>
@@ -147,11 +148,11 @@ const BeatmapSet = ({ beatmapSet, touchDevice, showEarly, allModes, probability 
             <h2 className="w-min font-extralight text-[10px] whitespace-nowrap text-neutral-300 pointer-events-auto leading-min">
               mapped by{" "}
               <a
-                href={`https://osu.ppy.sh/users/${beatmapSet.mi}`}
+                href={`https://osu.ppy.sh/users/${beatmapSet.mapper_id}`}
                 target="_blank"
                 rel="noreferrer"
               >
-                <span className="font-medium opacity-100 text-neutral-50">{beatmapSet.m}</span>
+                <span className="font-medium opacity-100 text-neutral-50">{beatmapSet.mapper}</span>
               </a>
             </h2>
 
@@ -160,10 +161,12 @@ const BeatmapSet = ({ beatmapSet, touchDevice, showEarly, allModes, probability 
               theme="black"
               content={
                 <p className="text-center text-xs">
-                  {beatmapSet.u
+                  {beatmapSet.unresolved
                     ? "Will be ranked when mapper resolves mod"
                     : `*Rank Early Probability: ${
-                        beatmapSet.p === null ? "Unknown" : (beatmapSet.p * 100).toFixed(2) + "%"
+                        beatmapSet.probability === null
+                          ? "Unknown"
+                          : (beatmapSet.probability * 100).toFixed(2) + "%"
                       }`}
                   <br />
                   <b>
@@ -190,12 +193,12 @@ const BeatmapSet = ({ beatmapSet, touchDevice, showEarly, allModes, probability 
                 data-tip
                 className="w-min text-yellow font-bold text-xl whitespace-nowrap pointer-events-auto leading-min my-0.5"
               >
-                {beatmapSet.u ? "Unresolved mod" : formatDate(secToDate(date))}
-                {beatmapSet.p !== null && beatmapSet.p >= probability ? (
+                {beatmapSet.unresolved ? "Unresolved mod" : formatDate(secToDate(date))}
+                {beatmapSet.probability !== null && beatmapSet.probability >= probability ? (
                   <>
                     *
                     <div className="text-[11px] font-light inline-block pl-[1px] pt-[2px] align-top">
-                      {(beatmapSet.p * 100).toFixed(probability == 0 ? 2 : 0)}%
+                      {(beatmapSet.probability * 100).toFixed(probability == 0 ? 2 : 0)}%
                     </div>
                   </>
                 ) : (
@@ -236,7 +239,7 @@ const BeatmapSet = ({ beatmapSet, touchDevice, showEarly, allModes, probability 
                   height={18}
                   className="select-none overflow-hidden"
                 />
-                <h2 className="w-min text-xs">{secToTime(beatmapSet.b[0].l)}</h2>
+                <h2 className="w-min text-xs">{secToTime(beatmapSet.beatmaps[0].len)}</h2>
               </div>
             </a>
           </div>
@@ -257,12 +260,12 @@ const BeatmapSet = ({ beatmapSet, touchDevice, showEarly, allModes, probability 
 
       {/* Beatmap Hover More Info */}
       <BeatmapsInfo
-        beatmaps={beatmapSet.b.sort((a, b) => a.m - b.m)}
+        beatmaps={beatmapSet.beatmaps}
         moreInfo={moreInfo}
         handleMouseEnter={handleMouseEnter}
         handleMouseLeave={handleMouseLeave}
         allModes={allModes}
-        unresolved={beatmapSet.u}
+        unresolved={beatmapSet.unresolved}
       />
     </div>
   );

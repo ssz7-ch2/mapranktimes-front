@@ -25,36 +25,34 @@ const TimeLeft = ({
       // update rankEarly
       let updateBeatmapSets = false;
       for (const beatmapSet of beatmapSets) {
-        if (date < secToDate(beatmapSet.rde ?? beatmapSet.rd)) break;
+        if (date < secToDate(beatmapSet.rank_date_early ?? beatmapSet.rank_date)) break;
         if (
-          beatmapSet.p &&
-          beatmapSet.p >= probability &&
-          date > Math.ceil((beatmapSet.rde * 1000) / 600000) * 600000
+          beatmapSet.probability &&
+          beatmapSet.probability >= probability &&
+          date > Math.ceil((beatmapSet.rank_date_early * 1000) / 600000) * 600000
         ) {
-          beatmapSet.p = 0;
-          beatmapSet.rde = beatmapSet.rd;
+          beatmapSet.probability = 0;
+          beatmapSet.rank_date_early = beatmapSet.rank_date;
           updateBeatmapSets = true;
         }
       }
       if (updateBeatmapSets) setBeatmapSets([...beatmapSets]);
 
       // filter out unresolved maps
-      let beatmapSet = beatmapSets.filter((b) => !b.u)[0];
+      const filteredSets = beatmapSets
+        .filter(filter)
+        .filter((beatmapSet) => !beatmapSet.unresolved);
 
-      if (filter !== null) {
-        const filteredSets = beatmapSets.filter(filter).filter((b) => !b.u);
-
-        if (filteredSets.length === 0) {
-          setTimeLeft(NaN);
-          return;
-        }
-
-        beatmapSet = filteredSets[0];
+      if (filteredSets.length === 0) {
+        setTimeLeft(NaN);
+        return;
       }
 
-      let rankDate = beatmapSet.rd * 1000;
-      if (showEarly && beatmapSet.p !== null && beatmapSet.p >= probability)
-        rankDate = beatmapSet.rde * 1000;
+      let beatmapSet = filteredSets[0];
+
+      let rankDate = beatmapSet.rank_date * 1000;
+      if (showEarly && beatmapSet.probability !== null && beatmapSet.probability >= probability)
+        rankDate = beatmapSet.rank_date_early * 1000;
 
       setTimeLeft(Math.floor(rankDate / 60000) * 60000 - date);
     };

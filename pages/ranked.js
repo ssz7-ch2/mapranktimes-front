@@ -6,7 +6,7 @@ import FilterTextBox from "../components/FilterTextBox";
 import { audioPlayer } from "../utils/audio";
 import Slider from "../components/Slider";
 import { debounce } from "lodash";
-import axios from "axios";
+import supabase from "../utils/supabase";
 
 const detectMediaChange = (mediaQuery, setValue, callback) => {
   const mql = matchMedia(mediaQuery);
@@ -50,18 +50,6 @@ const Home = () => {
     });
   };
 
-  const getBeatmapSets = () => {
-    const API_URL = `${
-      process.env.NEXT_PUBLIC_API_URL || `http://${window.location.hostname}:5000`
-    }/ranked`;
-
-    const fetchData = async () => {
-      const result = await axios.get(API_URL);
-      setBeatmapSets(result.data);
-    };
-    fetchData().catch(console.error);
-  };
-
   const audioSetup = () => {
     audioPlayer.setUp();
     audioPlayer.setOnPause(() => {
@@ -83,6 +71,17 @@ const Home = () => {
     if (mode) {
       _setSelectedMode(parseInt(mode));
     }
+
+    const getBeatmapSets = async () => {
+      const res = await fetch("/api/getranked");
+      const data = await res.json();
+
+      data.forEach((updatedBeatmapSet) => {
+        updatedBeatmapSet.beatmaps = JSON.parse(updatedBeatmapSet.beatmaps);
+      });
+
+      setBeatmapSets(data.sort((a, b) => b.rank_date - a.rank_date));
+    };
 
     getBeatmapSets();
 
@@ -130,8 +129,9 @@ const Home = () => {
           {modeList.map((mode, i) => (
             <button
               title={`${
-                beatmapSets?.filter((beatmapSet) => beatmapSet.b.some((beatmap) => beatmap.m == i))
-                  .length ?? 0
+                beatmapSets?.filter((beatmapSet) =>
+                  beatmapSet.beatmaps.some((beatmap) => beatmap.mode == i)
+                ).length ?? 0
               } maps`}
               key={`${mode}${i}`}
               className="opacity-60 hover:opacity-100 transition-opacity"
@@ -186,12 +186,14 @@ const Home = () => {
                   ? beatmapSets
                   : beatmapSets
                       ?.filter((beatmapSet) =>
-                        beatmapSet.b.some((beatmap) => beatmap.m == selectedMode)
+                        beatmapSet.beatmaps.some((beatmap) => beatmap.mode == selectedMode)
                       )
                       .map((beatmapSet) => {
                         return {
                           ...beatmapSet,
-                          b: beatmapSet.b.filter((beatmap) => beatmap.m == selectedMode),
+                          beatmaps: beatmapSet.beatmaps.filter(
+                            (beatmap) => beatmap.mode == selectedMode
+                          ),
                         };
                       })
               }
