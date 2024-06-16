@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Ratelimit } from "@upstash/ratelimit";
-import { kv } from "@vercel/kv";
+import { Redis } from "@upstash/redis";
 
 const ratelimit = new Ratelimit({
-  redis: kv,
+  redis: Redis.fromEnv(),
   // 120 requests per day
   limiter: Ratelimit.slidingWindow(120, "1d"),
 });
