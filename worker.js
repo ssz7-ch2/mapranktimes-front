@@ -23,7 +23,6 @@ const connectDatabase = () => {
 
       if (status === "CHANNEL_ERROR") {
         console.log("Realtime channel error.", new Date().toISOString());
-        console.log(error);
       }
 
       if (status === "TIMED_OUT") {
