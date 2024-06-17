@@ -402,8 +402,8 @@ const Home = () => {
             <div className="mx-auto text-left text-sm">
               <ul className="list-disc ml-4 marker:text-neutral-400">
                 <li>All times are in local time</li>
-                <li>Page updates on minutes 5, 10, 25, 30, 45, 50</li>
-                <li>Most maps are ranked within 8 minutes (~99% of maps)</li>
+                <li>Page updates on minutes 2, 3, 4, 5, 6, 8, 11 (repeated every 20 minutes)</li>
+                <li>98% of maps are ranked within 8 minutes</li>
                 <li>
                   <a
                     href="https://docs.google.com/spreadsheets/d/1bCgPBLKmHQkkviqOc3UJVy2NMggSeo8zhMVP7Yde97M/edit?usp=sharing"
