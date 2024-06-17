@@ -156,8 +156,6 @@ const Home = () => {
           });
           const updatedMaps = await res.json();
 
-          console.log(updatedMaps);
-
           data = updatedMaps;
         }
 
