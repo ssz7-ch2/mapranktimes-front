@@ -173,7 +173,11 @@ const Home = () => {
             });
 
             // it's possible for the maps to become out of order
-            updatedBeatmapSets.sort((a, b) => a.rank_date_early - b.rank_date_early);
+            updatedBeatmapSets.sort((a, b) =>
+              a.rank_date_early === b.rank_date_early
+                ? a.queue_date - b.queue_date
+                : a.rank_date_early - b.rank_date_early
+            );
           }
 
           return updatedBeatmapSets;
@@ -193,7 +197,13 @@ const Home = () => {
         updatedBeatmapSet.beatmaps = JSON.parse(updatedBeatmapSet.beatmaps);
       });
 
-      setBeatmapSets(data.sort((a, b) => a.rank_date_early - b.rank_date_early));
+      setBeatmapSets(
+        data.sort((a, b) =>
+          a.rank_date_early === b.rank_date_early
+            ? a.queue_date - b.queue_date
+            : a.rank_date_early - b.rank_date_early
+        )
+      );
     };
 
     getBeatmapSets();
