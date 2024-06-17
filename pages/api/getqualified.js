@@ -1,8 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
 const handler = async (req, res) => {
-  // move cache to upstash if vercel runs out?
-  res.setHeader("Cache-Control", "s-maxage=150");
+  res.setHeader("Cache-Control", "max-age=10, s-maxage=60");
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,

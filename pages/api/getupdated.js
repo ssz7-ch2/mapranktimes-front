@@ -1,25 +1,31 @@
 import { createClient } from "@supabase/supabase-js";
+import { Redis } from "@upstash/redis";
 
 const handler = async (req, res) => {
-  res.setHeader("Cache-Control", "s-maxage=150");
+  const { updated_maps: updatedMaps, timestamp } = req.body;
+
+  if (!timestamp) {
+    res.status(404).json({ error: `Failed to get updated maps.` });
+    return;
+  }
+
+  const redis = Redis.fromEnv();
+  const dataCached = await redis.get(`updates-${timestamp}`);
+
+  if (dataCached) {
+    console.log("cache hit");
+    res.status(200).json(typeof dataCached === "string" ? JSON.parse(dataCached) : dataCached);
+    return;
+  }
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   );
 
-  const { data: updates, error: errorUpdates } = await supabase
-    .from("updates")
-    .select("updated_maps");
-  if (!updates || errorUpdates) {
-    res.status(404).json({ error: `Failed to get updated maps.` });
-    return;
-  }
-
-  const updatedMaps = updates[0].updated_maps;
   const { data, error } = await supabase.from("beatmapsets").select("*").in("id", updatedMaps);
 
-  console.log("getupdated");
+  console.log("cache miss");
 
   if (!data || error) {
     res.status(404).json({ error: `Failed to get updated maps.` });

@@ -139,13 +139,24 @@ const Home = () => {
     const connectDatabase = () => {
       workerRef.current = new Worker(new URL("../worker.js", import.meta.url));
       workerRef.current.onmessage = async (event) => {
-        const { updated_maps, deleted_maps } = event.data;
+        const { updated_maps, deleted_maps, timestamp } = event.data;
         let data;
         if (updated_maps.length > 0) {
-          await new Promise((resolve) => setTimeout(resolve, Math.floor(Math.random() * 10000)));
+          await new Promise((resolve) =>
+            setTimeout(resolve, Math.floor(Math.random() * 1200 + 800))
+          );
 
-          const res = await fetch("/api/getupdated");
+          const res = await fetch("/api/getupdated", {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ timestamp, updated_maps }),
+          });
           const updatedMaps = await res.json();
+
+          console.log(updatedMaps);
 
           data = updatedMaps;
         }
@@ -159,16 +170,25 @@ const Home = () => {
           }
 
           if (data) {
-            data.forEach((updatedBeatmapSet) => {
-              updatedBeatmapSet.beatmaps = JSON.parse(updatedBeatmapSet.beatmaps);
-              const index = updatedBeatmapSets.findIndex(
-                (beatmapSet) => beatmapSet.id === updatedBeatmapSet.id
-              );
+            data.forEach((item) => {
+              const index = updatedBeatmapSets.findIndex((beatmapSet) => beatmapSet.id === item.id);
               if (index >= 0) {
-                updatedBeatmapSets[index] = updatedBeatmapSet;
+                if (item.beatmaps) {
+                  item.beatmaps = JSON.parse(item.beatmaps);
+                  updatedBeatmapSets[index] = item;
+                } else {
+                  updatedBeatmapSets[index].unresolved = item.unresolved;
+                }
               } else {
-                // new qualified map
-                updatedBeatmapSets.push(updatedBeatmapSet);
+                if (item.beatmaps) {
+                  // new qualified map
+                  item.beatmaps = JSON.parse(item.beatmaps);
+                  updatedBeatmapSets.push(item);
+                } else {
+                  console.log("missing map from beatmapsets", item.id);
+                  console.log(item);
+                  console.log(updatedBeatmapSets);
+                }
               }
             });
 
@@ -179,6 +199,8 @@ const Home = () => {
                 : a.rank_date_early - b.rank_date_early
             );
           }
+
+          localStorage.setItem("beatmapSets", JSON.stringify(updatedBeatmapSets));
 
           return updatedBeatmapSets;
         });
@@ -197,13 +219,14 @@ const Home = () => {
         updatedBeatmapSet.beatmaps = JSON.parse(updatedBeatmapSet.beatmaps);
       });
 
-      setBeatmapSets(
-        data.sort((a, b) =>
-          a.rank_date_early === b.rank_date_early
-            ? a.queue_date - b.queue_date
-            : a.rank_date_early - b.rank_date_early
-        )
+      const updatedBeatmapSets = data.sort((a, b) =>
+        a.rank_date_early === b.rank_date_early
+          ? a.queue_date - b.queue_date
+          : a.rank_date_early - b.rank_date_early
       );
+
+      setBeatmapSets(updatedBeatmapSets);
+      localStorage.setItem("beatmapSets", JSON.stringify(updatedBeatmapSets));
     };
 
     getBeatmapSets();
