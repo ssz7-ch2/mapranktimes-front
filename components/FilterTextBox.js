@@ -29,7 +29,6 @@ const stringToFilter = (line) => {
   const filterStrings = line.toLowerCase().trim().split(" ");
   const filters = [];
   let filterUnresolved = false;
-  console.log("test");
 
   const validStrings = [];
   filterStrings.forEach((filterString) => {
