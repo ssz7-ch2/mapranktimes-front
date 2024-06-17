@@ -42,6 +42,8 @@ const Home = () => {
   const [selectedMode, _setSelectedMode] = useState(0); // -1 All, 0 osu, 1 taiko, 2 catch, 3 mania
   const volumeSliderRef = useRef();
 
+  const workerRef = useRef();
+
   const setFilterOn = (value) => {
     _setFilterOn(value);
     localStorage.setItem("filterOn", value);
@@ -135,58 +137,50 @@ const Home = () => {
     }
 
     const connectDatabase = () => {
-      supabase
-        .channel("map-updates")
-        .on(
-          "postgres_changes",
-          { event: "*", schema: "public", table: "updates" },
-          async (payload) => {
-            //console.log(payload);
-            if (payload.new.deleted_maps.length + payload.new.updated_maps.length === 0) return;
+      workerRef.current = new Worker(new URL("../worker.js", import.meta.url));
+      workerRef.current.onmessage = async (event) => {
+        const { updated_maps, deleted_maps } = event.data;
+        let data;
+        if (updated_maps.length > 0) {
+          await new Promise((resolve) => setTimeout(resolve, Math.floor(Math.random() * 10000)));
 
-            let data;
-            if (payload.new.updated_maps.length > 0) {
-              await new Promise((resolve) =>
-                setTimeout(resolve, Math.floor(Math.random() * 10000))
-              );
+          const res = await fetch("/api/getupdated");
+          const updatedMaps = await res.json();
 
-              const res = await fetch("/api/getupdated");
-              const updatedMaps = await res.json();
+          data = updatedMaps;
+        }
 
-              data = updatedMaps;
-            }
-
-            setBeatmapSets((beatmapSets) => {
-              let updatedBeatmapSets = [...beatmapSets];
-              if (payload.new.deleted_maps.length > 0) {
-                updatedBeatmapSets = updatedBeatmapSets.filter(
-                  (beatmapSet) => !payload.new.deleted_maps.includes(beatmapSet.id)
-                );
-              }
-
-              if (data) {
-                data.forEach((updatedBeatmapSet) => {
-                  updatedBeatmapSet.beatmaps = JSON.parse(updatedBeatmapSet.beatmaps);
-                  const index = updatedBeatmapSets.findIndex(
-                    (beatmapSet) => beatmapSet.id === updatedBeatmapSet.id
-                  );
-                  if (index >= 0) {
-                    updatedBeatmapSets[index] = updatedBeatmapSet;
-                  } else {
-                    // new qualified map
-                    updatedBeatmapSets.push(updatedBeatmapSet);
-                  }
-                });
-
-                // it's possible for the maps to become out of order
-                updatedBeatmapSets.sort((a, b) => a.rank_date_early - b.rank_date_early);
-              }
-
-              return updatedBeatmapSets;
-            });
+        setBeatmapSets((beatmapSets) => {
+          let updatedBeatmapSets = [...beatmapSets];
+          if (deleted_maps.length > 0) {
+            updatedBeatmapSets = updatedBeatmapSets.filter(
+              (beatmapSet) => !deleted_maps.includes(beatmapSet.id)
+            );
           }
-        )
-        .subscribe();
+
+          if (data) {
+            data.forEach((updatedBeatmapSet) => {
+              updatedBeatmapSet.beatmaps = JSON.parse(updatedBeatmapSet.beatmaps);
+              const index = updatedBeatmapSets.findIndex(
+                (beatmapSet) => beatmapSet.id === updatedBeatmapSet.id
+              );
+              if (index >= 0) {
+                updatedBeatmapSets[index] = updatedBeatmapSet;
+              } else {
+                // new qualified map
+                updatedBeatmapSets.push(updatedBeatmapSet);
+              }
+            });
+
+            // it's possible for the maps to become out of order
+            updatedBeatmapSets.sort((a, b) => a.rank_date_early - b.rank_date_early);
+          }
+
+          return updatedBeatmapSets;
+        });
+
+        console.log("beatmapsets updated", new Date().toISOString());
+      };
     };
 
     connectDatabase();
@@ -216,6 +210,7 @@ const Home = () => {
 
     return () => {
       audioPlayer.stop();
+      workerRef.current?.terminate();
     };
   }, []);
 
