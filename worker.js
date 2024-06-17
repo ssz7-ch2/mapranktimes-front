@@ -9,7 +9,6 @@ const connectDatabase = () => {
   const mapUpdatesChannel = supabase.channel("map-updates");
   mapUpdatesChannel
     .on("postgres_changes", { event: "*", schema: "public", table: "updates" }, async (payload) => {
-      console.log(payload);
       if (payload.new.deleted_maps.length + payload.new.updated_maps.length === 0) return;
       postMessage(payload.new);
     })
