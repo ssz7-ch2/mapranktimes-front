@@ -9,7 +9,6 @@ import { audioPlayer } from "../utils/audio";
 import Slider from "../components/Slider";
 import { debounce } from "lodash";
 import { secToDate } from "../utils/timeString";
-import supabase from "../utils/supabase";
 
 const detectMediaChange = (mediaQuery, setValue, callback) => {
   const mql = matchMedia(mediaQuery);
