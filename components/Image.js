@@ -8,25 +8,29 @@ const Image = ({ src: url, alt, storageId, className, delayed = false }) => {
       let storedSrc = localStorage.getItem(storageId);
 
       if (!storedSrc && delayed) {
-        await new Promise((resolve) => setTimeout(resolve, 750));
-        storedSrc = localStorage.getItem(storageId);
+        for (let i = 0; i < 5; i++) {
+          await new Promise((resolve) => setTimeout(resolve, 150));
+          storedSrc = localStorage.getItem(storageId);
+          if (storedSrc) break;
+        }
       }
 
       if (storedSrc) {
         setSrc(storedSrc);
       } else {
-        setSrc(url);
         fetch(`https://corsproxy.io/?${url}`)
           .then((response) => response.blob())
           .then((blob) => {
             const reader = new FileReader();
             reader.readAsDataURL(blob);
             reader.onloadend = function () {
+              setSrc(reader.result);
               localStorage.setItem(storageId, reader.result);
             };
           })
           .catch((error) => {
             // failed to fetch image
+            setSrc(url);
           });
       }
     };

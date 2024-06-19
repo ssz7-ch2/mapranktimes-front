@@ -9,6 +9,7 @@ import { audioPlayer } from "../utils/audio";
 import Slider from "../components/Slider";
 import { debounce } from "lodash";
 import { secToDate } from "../utils/timeString";
+import ModeIcon from "../components/ModeIcon";
 
 const detectMediaChange = (mediaQuery, setValue, callback) => {
   const mql = matchMedia(mediaQuery);
@@ -224,16 +225,6 @@ const Home = () => {
 
       setBeatmapSets(updatedBeatmapSets);
       localStorage.setItem("beatmapSets", JSON.stringify(updatedBeatmapSets));
-
-      Object.keys(localStorage).forEach((key) => {
-        if (
-          key.startsWith("Q") &&
-          updatedBeatmapSets.findIndex((beatmapSet) => beatmapSet.id === parseInt(key.slice(1))) ===
-            -1
-        ) {
-          localStorage.removeItem(key);
-        }
-      });
     };
 
     getBeatmapSets();
@@ -313,13 +304,7 @@ const Home = () => {
               }}
               onClick={() => (selectedMode === i ? setSelectedMode(-1) : setSelectedMode(i))}
             >
-              <img
-                src={`/icons/mode${i}.svg`}
-                alt="spinner icon"
-                width={18}
-                height={18}
-                className="select-none overflow-hidden"
-              />
+              <ModeIcon mode={i} width={18} height={18} className="select-none overflow-hidden" />
             </button>
           ))}
         </div>
