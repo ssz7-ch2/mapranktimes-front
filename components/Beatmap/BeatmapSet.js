@@ -5,6 +5,7 @@ import { secToDate, secToTime } from "../../utils/timeString";
 import BeatmapsInfo from "./BeatmapsInfo";
 import { debounce } from "lodash";
 import { audioPlayer } from "../../utils/audio";
+import Image from "../Image";
 
 const formatDate = (date) => {
   return `${date.toLocaleString("default", {
@@ -79,10 +80,11 @@ const BeatmapSet = ({ beatmapSet, touchDevice, showEarly, allModes, probability 
           }}
           data-audio-state="paused"
         >
-          <img
+          <Image
             className="h-full select-none object-cover"
-            src={`https://assets.ppy.sh/beatmaps/${beatmapSet.id}/covers/list@2x.jpg`}
+            src={`https://assets.ppy.sh/beatmaps/${beatmapSet.id}/covers/list.jpg`}
             alt="beatmap image"
+            storageId={beatmapSet.queue_date ? `Q${beatmapSet.id}` : `R${beatmapSet.id}`}
           />
           <div className="absolute flex items-center justify-center bg-[rgba(0,0,0,0.6)] top-0 left-0 w-full h-full play-icon">
             <svg
@@ -124,10 +126,12 @@ const BeatmapSet = ({ beatmapSet, touchDevice, showEarly, allModes, probability 
             target={touchDevice ? undefined : "_blank"}
             rel="noreferrer"
           >
-            <img
+            <Image
               className="absolute z-0 object-cover w-full h-full blur-lg brightness-[0.3] select-none"
-              src={`https://assets.ppy.sh/beatmaps/${beatmapSet.id}/covers/card.jpg`}
+              src={`https://assets.ppy.sh/beatmaps/${beatmapSet.id}/covers/list.jpg`}
               alt="beatmap cover"
+              storageId={beatmapSet.queue_date ? `Q${beatmapSet.id}` : `R${beatmapSet.id}`}
+              delayed={true}
             />
           </a>
 

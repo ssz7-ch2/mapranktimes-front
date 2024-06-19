@@ -80,7 +80,19 @@ const Home = () => {
         updatedBeatmapSet.beatmaps = JSON.parse(updatedBeatmapSet.beatmaps);
       });
 
-      setBeatmapSets(data.sort((a, b) => b.rank_date - a.rank_date));
+      const updatedBeatmapSets = data.sort((a, b) => b.rank_date - a.rank_date);
+
+      setBeatmapSets(updatedBeatmapSets);
+
+      Object.keys(localStorage).forEach((key) => {
+        if (
+          key.startsWith("R") &&
+          updatedBeatmapSets.findIndex((beatmapSet) => beatmapSet.id === parseInt(key.slice(1))) ===
+            -1
+        ) {
+          localStorage.removeItem(key);
+        }
+      });
     };
 
     getBeatmapSets();

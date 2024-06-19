@@ -1,5 +1,4 @@
 import React from "react";
-import Image from "next/image";
 import { secToTime } from "../../utils/timeString";
 import useDelayUnmount from "../useDelayUnmount";
 import mapDiffColor from "../../utils/mapDiffColor";

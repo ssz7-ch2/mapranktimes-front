@@ -224,6 +224,16 @@ const Home = () => {
 
       setBeatmapSets(updatedBeatmapSets);
       localStorage.setItem("beatmapSets", JSON.stringify(updatedBeatmapSets));
+
+      Object.keys(localStorage).forEach((key) => {
+        if (
+          key.startsWith("Q") &&
+          updatedBeatmapSets.findIndex((beatmapSet) => beatmapSet.id === parseInt(key.slice(1))) ===
+            -1
+        ) {
+          localStorage.removeItem(key);
+        }
+      });
     };
 
     getBeatmapSets();
