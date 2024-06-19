@@ -14,10 +14,8 @@ const Image = ({ src: url, alt, storageId, className, delayed = false }) => {
 
       if (storedSrc) {
         setSrc(storedSrc);
-        console.log("using storedSrc", storageId);
       } else {
         setSrc(url);
-        console.log("fetching image");
         fetch(`https://corsproxy.io/?${url}`)
           .then((response) => response.blob())
           .then((blob) => {
