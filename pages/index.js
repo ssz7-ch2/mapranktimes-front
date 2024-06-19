@@ -396,7 +396,10 @@ const Home = () => {
             <h2 className="text-xl mt-3 font-medium">Timer</h2>
             <p>
               If timer is <span className="text-[#1FA009] font-normal">green</span>, then the next
-              map is being ranked. Map will disappear from page when map is ranked.
+              map is being ranked. Map will disappear from page when map is ranked (usually within a
+              minute).
+              <br />
+              If the first map is unresolved, the timer will use the next map.
             </p>
             <hr className="border-neutral-400 mt-3" />
             <h2 className="text-xl mt-3 font-medium">Filter</h2>
