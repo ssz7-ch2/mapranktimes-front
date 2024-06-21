@@ -1,6 +1,6 @@
 import React from "react";
 
-const ModeIcon = ({ key, mode, width, height, className }) => {
+const ModeIcon = ({ mode, width, height, className }) => {
   let path;
   switch (mode) {
     case 0:
@@ -24,7 +24,6 @@ const ModeIcon = ({ key, mode, width, height, className }) => {
   }
   return (
     <svg
-      key={key}
       width={width}
       height={height}
       version="1.1"
