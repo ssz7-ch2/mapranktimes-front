@@ -10,6 +10,7 @@ import Slider from "../components/Slider";
 import { debounce } from "lodash";
 import { secToDate } from "../utils/timeString";
 import ModeIcon from "../components/ModeIcon";
+import supabase from "../utils/supabase";
 
 const detectMediaChange = (mediaQuery, setValue, callback) => {
   const mql = matchMedia(mediaQuery);
@@ -210,8 +211,15 @@ const Home = () => {
     connectDatabase();
 
     const getBeatmapSets = async () => {
-      const res = await fetch("/api/getqualified");
-      const data = await res.json();
+      const { data, error } = await supabase
+        .from("beatmapsets")
+        .select("*")
+        .not("queue_date", "is", null);
+
+      if (error) {
+        console.log(error);
+        return;
+      }
 
       data.forEach((updatedBeatmapSet) => {
         updatedBeatmapSet.beatmaps = JSON.parse(updatedBeatmapSet.beatmaps);
