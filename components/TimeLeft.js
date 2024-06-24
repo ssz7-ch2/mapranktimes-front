@@ -41,17 +41,10 @@ const TimeLeft = ({
       }
       if (updateBeatmapSets) setBeatmapSets([...beatmapSets]);
 
-      const _filteredSets = beatmapSets.filter(filter);
-
-      const filteredSets = _filteredSets.filter((beatmapSet) => !beatmapSet.unresolved);
-
-      // if first map is unresolved, use its rank_date until 12 minutes have passed
-      // then switch to the next map in queue
-      if (_filteredSets.length > 0 && _filteredSets[0].unresolved) {
-        if (date.getTime() - _filteredSets[0].rank_date * 1000 < 60000 * 12) {
-          filteredSets.splice(0, 0, _filteredSets[0]);
-        }
-      }
+      // filter out unresolved maps
+      const filteredSets = beatmapSets
+        .filter(filter)
+        .filter((beatmapSet) => !beatmapSet.unresolved);
 
       if (filteredSets.length === 0) {
         setTimeLeft(NaN);
