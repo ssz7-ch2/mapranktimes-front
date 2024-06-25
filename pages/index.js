@@ -262,7 +262,7 @@ const Home = () => {
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
         <link rel="manifest" href="/site.webmanifest" />
         <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#ffdd55" />
-        <meta name="msapplication-TileColor" content="#603cba" />
+        <meta name="msapplication-TileColor" content="#151515" />
         <meta name="theme-color" content="#ffdd55"></meta>
       </Head>
       <main className="min-h-screen font-sans flex flex-col w-full items-center text-center px-3 md:px-5 mx-auto md:max-w-[1024px] max-w-[448px]">
