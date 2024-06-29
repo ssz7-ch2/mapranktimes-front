@@ -26,10 +26,13 @@ const TimeLeft = ({
       let updateBeatmapSets = false;
       for (const beatmapSet of beatmapSets) {
         if (date < secToDate(beatmapSet.rank_date_early ?? beatmapSet.rank_date)) break;
+
+        // if 12 minutes have passed since the ranking process started
+        // the map can't be ranked early anymore
         if (
           beatmapSet.probability &&
           beatmapSet.probability >= probability &&
-          date > Math.ceil((beatmapSet.rank_date_early * 1000) / 600000) * 600000
+          date > Math.ceil((beatmapSet.rank_date_early * 1000) / 600000) * 600000 + 120000
         ) {
           beatmapSet.probability = 0;
           beatmapSet.rank_date_early = beatmapSet.rank_date;

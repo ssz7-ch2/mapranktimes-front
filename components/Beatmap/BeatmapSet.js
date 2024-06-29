@@ -5,6 +5,7 @@ import { secToDate, secToTime } from "../../utils/timeString";
 import BeatmapsInfo from "./BeatmapsInfo";
 import { debounce } from "lodash";
 import { audioPlayer } from "../../utils/audio";
+import ModeIcon from "../ModeIcon";
 
 const formatDate = (date) => {
   return `${date.toLocaleString("default", {
@@ -81,11 +82,40 @@ const BeatmapSet = ({ beatmapSet, touchDevice, showEarly, allModes, probability 
         >
           <img
             className="h-full select-none object-cover"
-            src={`https://assets.ppy.sh/beatmaps/${beatmapSet.id}/covers/list@2x.jpg`}
+            src={`https://assets.ppy.sh/beatmaps/${beatmapSet.id}/covers/list.jpg`}
             alt="beatmap image"
           />
           <div className="absolute flex items-center justify-center bg-[rgba(0,0,0,0.6)] top-0 left-0 w-full h-full play-icon">
-            <span className="play-button text-[28px] md:text-4xl"></span>
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              data-prefix="fas"
+              data-icon="play"
+              className="w-6 md:w-7 absolute play-button"
+              role="img"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 384 512"
+            >
+              <path
+                fill="currentColor"
+                d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"
+              ></path>
+            </svg>
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              data-prefix="fas"
+              data-icon="pause"
+              className="w-[23px] md:w-[27px] absolute pause-button"
+              role="img"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 320 512"
+            >
+              <path
+                fill="currentColor"
+                d="M48 64C21.5 64 0 85.5 0 112V400c0 26.5 21.5 48 48 48H80c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H48zm192 0c-26.5 0-48 21.5-48 48V400c0 26.5 21.5 48 48 48h32c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H240z"
+              ></path>
+            </svg>
           </div>
         </div>
         <div className="relative w-full h-full text-left bg-neutral-900 overflow-hidden">
@@ -97,7 +127,7 @@ const BeatmapSet = ({ beatmapSet, touchDevice, showEarly, allModes, probability 
           >
             <img
               className="absolute z-0 object-cover w-full h-full blur-lg brightness-[0.3] select-none"
-              src={`https://assets.ppy.sh/beatmaps/${beatmapSet.id}/covers/card.jpg`}
+              src={`https://assets.ppy.sh/beatmaps/${beatmapSet.id}/covers/list.jpg`}
               alt="beatmap cover"
             />
           </a>
@@ -122,10 +152,9 @@ const BeatmapSet = ({ beatmapSet, touchDevice, showEarly, allModes, probability 
                         )
                         .sort()
                         .map((mode, i) => (
-                          <img
+                          <ModeIcon
+                            mode={mode}
                             key={`${mode}${i}`}
-                            src={`/icons/mode${mode}.svg`}
-                            alt="spinner icon"
                             width={15}
                             height={15}
                             className="select-none overflow-hidden"
@@ -219,26 +248,48 @@ const BeatmapSet = ({ beatmapSet, touchDevice, showEarly, allModes, probability 
             >
               {/* Diffs */}
               <div className="flex items-center gap-1.5 min-w-[88px] w-max">
-                <img
-                  src="/icons/spinners.svg"
-                  alt="spinner icon"
+                <svg
                   width={18}
                   height={18}
                   className="select-none overflow-hidden"
-                />
+                  role="img"
+                  version="1.1"
+                  viewBox="0 0 300 300"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g transform="scale(1 -1)">
+                    <path
+                      d="m256.25-150c0-58.594-47.656-106.25-106.25-106.25s-106.25 47.656-106.25 106.25 47.656 106.25 106.25 106.25 106.25-47.656 106.25-106.25zm43.75 0c0 82.813-67.187 150-150 150-82.812 0-150-67.187-150-150 0-82.812 67.188-150 150-150 82.813 0 150 67.188 150 150z"
+                      fill="#fd5"
+                    />
+                    <path
+                      d="m144.02-156.58c-13.911-1.211-23.305-9.657-29.227-21.491-6.749-13.487-7.421-29.052 1.312-43.255 4.075-7.332 8.734-11.547 15.455-14.67 3.388-1.573 6.748-2.561 11.001-3.237 2.148-0.342 4.235-0.551 6.62-0.666 0.909-0.044 2.279-0.056 3.629-0.054 32.086 0.983 59.945 18.76 75.083 44.837l-0.06-0.036c-17.555-9.603-39.566-9.689-55.573-1.679-14.34 7.175-25.715 22.08-28.24 40.251zm-39.173-71.246c-9.603 17.555-9.689 39.566-1.679 55.573 7.175 14.34 22.08 25.715 40.251 28.24-1.211 13.911-9.657 23.305-21.491 29.227-13.487 6.749-29.052 7.421-43.255-1.312-7.332-4.075-11.547-8.734-14.67-15.455-1.574-3.388-2.561-6.748-3.237-11.001-0.342-2.148-0.551-4.235-0.666-6.62-0.044-0.909-0.056-2.279-0.054-3.629 0.983-32.086 18.76-59.945 44.837-75.083-0.012 0.02-0.024 0.04-0.036 0.06zm-32.674 122.99c17.555 9.603 39.566 9.689 55.573 1.679 14.34-7.175 25.715-22.08 28.24-40.251 13.911 1.211 23.305 9.657 29.227 21.491 6.749 13.487 7.421 29.052-1.312 43.255-4.075 7.332-8.734 11.547-15.455 14.67-3.388 1.573-6.748 2.561-11.001 3.237-2.148 0.342-4.235 0.551-6.62 0.666-0.909 0.044-2.279 0.056-3.629 0.054-32.086-0.983-59.945-18.76-75.083-44.837l0.06 0.036zm122.99 32.674c9.603-17.555 9.689-39.566 1.679-55.573-7.175-14.34-22.08-25.715-40.251-28.24 1.211-13.911 9.657-23.305 21.491-29.227 13.487-6.749 29.052-7.421 43.255 1.312 7.332 4.075 11.547 8.734 14.67 15.455 1.573 3.388 2.561 6.748 3.237 11.001 0.342 2.148 0.551 4.235 0.666 6.62 0.044 0.909 0.056 2.279 0.054 3.629-0.983 32.086-18.76 59.945-44.837 75.083 0.012-0.02 0.024-0.04 0.036-0.06z"
+                      fill="#fd5"
+                    />
+                  </g>
+                </svg>
 
                 <h2 className="w-min whitespace-nowrap text-xs">{getDiffString(beatmapSet)}</h2>
               </div>
 
               {/* Length */}
               <div className="flex items-center gap-1.5 w-max pr-3">
-                <img
-                  src="/icons/length.svg"
-                  alt="length icon"
+                <svg
                   width={18}
                   height={18}
+                  version="1.1"
+                  viewBox="0 0 300 300"
                   className="select-none overflow-hidden"
-                />
+                  role="img"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g transform="scale(1 -1)">
+                    <path
+                      d="m175-81.25c0 3.516-2.734 6.25-6.25 6.25h-12.5c-3.516 0-6.25-2.734-6.25-6.25v-68.75h-43.75c-3.516 0-6.25-2.734-6.25-6.25v-12.5c0-3.516 2.734-6.25 6.25-6.25h62.5c3.516 0 6.25 2.734 6.25 6.25v87.5zm81.25-68.75c0-58.594-47.656-106.25-106.25-106.25s-106.25 47.656-106.25 106.25 47.656 106.25 106.25 106.25 106.25-47.656 106.25-106.25zm43.75 0c0 82.813-67.187 150-150 150-82.812 0-150-67.187-150-150 0-82.812 67.188-150 150-150 82.813 0 150 67.188 150 150z"
+                      fill="#fd5"
+                    />
+                  </g>
+                </svg>
                 <h2 className="w-min text-xs">{secToTime(beatmapSet.beatmaps[0].len)}</h2>
               </div>
             </a>

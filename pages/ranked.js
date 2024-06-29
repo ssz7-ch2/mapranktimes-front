@@ -7,6 +7,7 @@ import { audioPlayer } from "../utils/audio";
 import Slider from "../components/Slider";
 import { debounce } from "lodash";
 import supabase from "../utils/supabase";
+import ModeIcon from "../components/ModeIcon";
 
 const detectMediaChange = (mediaQuery, setValue, callback) => {
   const mql = matchMedia(mediaQuery);
@@ -80,7 +81,9 @@ const Home = () => {
         updatedBeatmapSet.beatmaps = JSON.parse(updatedBeatmapSet.beatmaps);
       });
 
-      setBeatmapSets(data.sort((a, b) => b.rank_date - a.rank_date));
+      const updatedBeatmapSets = data.sort((a, b) => b.rank_date - a.rank_date);
+
+      setBeatmapSets(updatedBeatmapSets);
     };
 
     getBeatmapSets();
@@ -107,7 +110,7 @@ const Home = () => {
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
         <link rel="manifest" href="/site.webmanifest" />
         <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#ffdd55" />
-        <meta name="msapplication-TileColor" content="#603cba" />
+        <meta name="msapplication-TileColor" content="#151515" />
         <meta name="theme-color" content="#ffdd55"></meta>
       </Head>
       <main className="min-h-screen font-sans flex flex-col w-full items-center text-center px-3 md:px-5 mx-auto md:max-w-[1024px] max-w-[448px]">
@@ -144,13 +147,7 @@ const Home = () => {
               }}
               onClick={() => (selectedMode === i ? setSelectedMode(-1) : setSelectedMode(i))}
             >
-              <img
-                src={`/icons/mode${i}.svg`}
-                alt="spinner icon"
-                width={18}
-                height={18}
-                className="select-none overflow-hidden"
-              />
+              <ModeIcon mode={i} width={18} height={18} className="select-none overflow-hidden" />
             </button>
           ))}
         </div>

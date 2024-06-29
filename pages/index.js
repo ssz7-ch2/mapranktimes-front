@@ -9,6 +9,7 @@ import { audioPlayer } from "../utils/audio";
 import Slider from "../components/Slider";
 import { debounce } from "lodash";
 import { secToDate } from "../utils/timeString";
+import ModeIcon from "../components/ModeIcon";
 import supabase from "../utils/supabase";
 
 const detectMediaChange = (mediaQuery, setValue, callback) => {
@@ -41,6 +42,8 @@ const Home = () => {
   const [showEarly, setShowEarly] = useState(null);
   const [selectedMode, _setSelectedMode] = useState(0); // -1 All, 0 osu, 1 taiko, 2 catch, 3 mania
   const volumeSliderRef = useRef();
+
+  const workerRef = useRef();
 
   const setFilterOn = (value) => {
     _setFilterOn(value);
@@ -135,78 +138,101 @@ const Home = () => {
     }
 
     const connectDatabase = () => {
-      supabase
-        .channel("map-updates")
-        .on(
-          "postgres_changes",
-          { event: "*", schema: "public", table: "updates" },
-          async (payload) => {
-            //console.log(payload);
-            if (payload.new.deleted_maps.length + payload.new.updated_maps.length === 0) return;
+      workerRef.current = new Worker(new URL("../worker.js", import.meta.url));
+      workerRef.current.onmessage = async (event) => {
+        const { updated_maps, deleted_maps, timestamp } = event.data;
+        let data;
+        if (updated_maps.length > 0) {
+          await new Promise((resolve) =>
+            setTimeout(resolve, Math.floor(Math.random() * 1200 + 800))
+          );
 
-            let data;
-            if (payload.new.updated_maps.length > 0) {
-              await new Promise((resolve) =>
-                setTimeout(resolve, Math.floor(Math.random() * 15000))
-              );
+          const res = await fetch("/api/getupdated", {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ timestamp, updated_maps }),
+          });
+          const updatedMaps = await res.json();
 
-              const res = await fetch("/api/getupdated", {
-                method: "POST",
-                headers: {
-                  Accept: "application/json",
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify(payload.new.updated_maps),
-              });
-              const updatedMaps = await res.json();
+          data = updatedMaps;
+        }
 
-              data = updatedMaps;
-            }
-
-            setBeatmapSets((beatmapSets) => {
-              let updatedBeatmapSets = [...beatmapSets];
-              if (payload.new.deleted_maps.length > 0) {
-                updatedBeatmapSets = updatedBeatmapSets.filter(
-                  (beatmapSet) => !payload.new.deleted_maps.includes(beatmapSet.id)
-                );
-              }
-
-              if (data) {
-                data.forEach((updatedBeatmapSet) => {
-                  updatedBeatmapSet.beatmaps = JSON.parse(updatedBeatmapSet.beatmaps);
-                  const index = updatedBeatmapSets.findIndex(
-                    (beatmapSet) => beatmapSet.id === updatedBeatmapSet.id
-                  );
-                  if (index >= 0) {
-                    updatedBeatmapSets[index] = updatedBeatmapSet;
-                  } else {
-                    // new qualified map
-                    updatedBeatmapSets.push(updatedBeatmapSet);
-                  }
-                });
-
-                // it's possible for the maps to become out of order
-                updatedBeatmapSets.sort((a, b) => a.rank_date_early - b.rank_date_early);
-              }
-
-              return updatedBeatmapSets;
-            });
+        setBeatmapSets((beatmapSets) => {
+          let updatedBeatmapSets = [...beatmapSets];
+          if (deleted_maps.length > 0) {
+            updatedBeatmapSets = updatedBeatmapSets.filter(
+              (beatmapSet) => !deleted_maps.includes(beatmapSet.id)
+            );
           }
-        )
-        .subscribe();
+
+          if (data) {
+            data.forEach((item) => {
+              const index = updatedBeatmapSets.findIndex((beatmapSet) => beatmapSet.id === item.id);
+              if (index >= 0) {
+                if (item.beatmaps) {
+                  item.beatmaps = JSON.parse(item.beatmaps);
+                  updatedBeatmapSets[index] = item;
+                } else {
+                  updatedBeatmapSets[index].unresolved = item.unresolved;
+                }
+              } else {
+                if (item.beatmaps) {
+                  // new qualified map
+                  item.beatmaps = JSON.parse(item.beatmaps);
+                  updatedBeatmapSets.push(item);
+                } else {
+                  console.log("missing map from beatmapsets", item.id);
+                  console.log(item);
+                  console.log(updatedBeatmapSets);
+                }
+              }
+            });
+
+            // it's possible for the maps to become out of order
+            updatedBeatmapSets.sort((a, b) =>
+              a.rank_date_early === b.rank_date_early
+                ? a.queue_date - b.queue_date
+                : a.rank_date_early - b.rank_date_early
+            );
+          }
+
+          localStorage.setItem("beatmapSets", JSON.stringify(updatedBeatmapSets));
+
+          return updatedBeatmapSets;
+        });
+
+        console.log("beatmapsets updated", new Date().toISOString());
+      };
     };
 
     connectDatabase();
 
     const getBeatmapSets = async () => {
-      const res = await fetch("/api/getqualified");
-      const data = await res.json();
+      const { data, error } = await supabase
+        .from("beatmapsets")
+        .select("*")
+        .not("queue_date", "is", null);
+
+      if (error) {
+        console.log(error);
+        return;
+      }
 
       data.forEach((updatedBeatmapSet) => {
         updatedBeatmapSet.beatmaps = JSON.parse(updatedBeatmapSet.beatmaps);
       });
 
-      setBeatmapSets(data.sort((a, b) => a.rank_date_early - b.rank_date_early));
+      const updatedBeatmapSets = data.sort((a, b) =>
+        a.rank_date_early === b.rank_date_early
+          ? a.queue_date - b.queue_date
+          : a.rank_date_early - b.rank_date_early
+      );
+
+      setBeatmapSets(updatedBeatmapSets);
+      localStorage.setItem("beatmapSets", JSON.stringify(updatedBeatmapSets));
     };
 
     getBeatmapSets();
@@ -223,6 +249,7 @@ const Home = () => {
 
     return () => {
       audioPlayer.stop();
+      workerRef.current?.terminate();
     };
   }, []);
 
@@ -235,7 +262,7 @@ const Home = () => {
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
         <link rel="manifest" href="/site.webmanifest" />
         <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#ffdd55" />
-        <meta name="msapplication-TileColor" content="#603cba" />
+        <meta name="msapplication-TileColor" content="#151515" />
         <meta name="theme-color" content="#ffdd55"></meta>
       </Head>
       <main className="min-h-screen font-sans flex flex-col w-full items-center text-center px-3 md:px-5 mx-auto md:max-w-[1024px] max-w-[448px]">
@@ -285,13 +312,7 @@ const Home = () => {
               }}
               onClick={() => (selectedMode === i ? setSelectedMode(-1) : setSelectedMode(i))}
             >
-              <img
-                src={`/icons/mode${i}.svg`}
-                alt="spinner icon"
-                width={18}
-                height={18}
-                className="select-none overflow-hidden"
-              />
+              <ModeIcon mode={i} width={18} height={18} className="select-none overflow-hidden" />
             </button>
           ))}
         </div>
@@ -383,7 +404,10 @@ const Home = () => {
             <h2 className="text-xl mt-3 font-medium">Timer</h2>
             <p>
               If timer is <span className="text-[#1FA009] font-normal">green</span>, then the next
-              map is being ranked. Map will disappear from page when map is ranked.
+              map is being ranked. Map will disappear from page when map is ranked (usually within a
+              minute).
+              <br />
+              If the first map is unresolved, the timer will use the next map.
             </p>
             <hr className="border-neutral-400 mt-3" />
             <h2 className="text-xl mt-3 font-medium">Filter</h2>
@@ -414,8 +438,8 @@ const Home = () => {
             <div className="mx-auto text-left text-sm">
               <ul className="list-disc ml-4 marker:text-neutral-400">
                 <li>All times are in local time</li>
-                <li>Page updates on minutes 5, 10, 25, 30, 45, 50</li>
-                <li>Most maps are ranked within 8 minutes (~99% of maps)</li>
+                <li>Page updates on minutes 2, 3, 4, 5, 6, 8, 11 (repeated every 20 minutes)</li>
+                <li>98% of maps are ranked within 8 minutes</li>
                 <li>
                   <a
                     href="https://docs.google.com/spreadsheets/d/1bCgPBLKmHQkkviqOc3UJVy2NMggSeo8zhMVP7Yde97M/edit?usp=sharing"

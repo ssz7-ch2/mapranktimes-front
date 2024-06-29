@@ -1,7 +1,26 @@
 import { createClient } from "@supabase/supabase-js";
+import Cors from "cors";
+
+const cors = Cors({
+  methods: ["GET"],
+});
+
+function runMiddleware(req, res, fn) {
+  return new Promise((resolve, reject) => {
+    fn(req, res, (result) => {
+      if (result instanceof Error) {
+        return reject(result);
+      }
+
+      return resolve(result);
+    });
+  });
+}
 
 const handler = async (req, res) => {
   res.setHeader("Cache-Control", "s-maxage=3600");
+
+  await runMiddleware(req, res, cors);
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
