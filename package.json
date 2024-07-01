@@ -16,6 +16,8 @@
 		"@sveltejs/adapter-auto": "^3.0.0",
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
+		"@types/d3-interpolate": "^3.0.4",
+		"@types/d3-scale": "^4.0.8",
 		"@types/eslint": "^8.56.7",
 		"@types/lodash-es": "^4.17.12",
 		"autoprefixer": "^10.4.19",
@@ -26,7 +28,7 @@
 		"postcss": "^8.4.38",
 		"prettier": "^3.1.1",
 		"prettier-plugin-svelte": "^3.1.2",
-		"svelte": "^5.0.0-next.1",
+		"svelte": "^5.0.0-next.168",
 		"svelte-check": "^3.6.0",
 		"tailwindcss": "^3.4.4",
 		"tslib": "^2.4.1",
@@ -38,6 +40,8 @@
 	"dependencies": {
 		"@supabase/supabase-js": "^2.44.2",
 		"@upstash/redis": "^1.31.6",
+		"d3-interpolate": "^3.0.1",
+		"d3-scale": "^4.0.2",
 		"lodash-es": "^4.17.21",
 		"tippy.js": "^6.3.7"
 	}

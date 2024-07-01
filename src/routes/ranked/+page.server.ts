@@ -25,7 +25,7 @@ export async function load() {
 						: beatmapSet.beatmaps;
 				return {
 					...beatmapSet,
-					beatmaps: parsedBeatmaps
+					beatmaps: parsedBeatmaps.sort((a, b) => a.mode - b.mode)
 				};
 			})
 			.sort((a, b) => b.rank_date - a.rank_date)

@@ -4,12 +4,15 @@
 	import { getContext } from 'svelte';
 	import { formatDate, secToDate, secToTime } from '../utils/date';
 	import { tooltip } from '$lib/tooltip';
+	import { debounce } from 'lodash-es';
+	import { touchDevice } from '../../stores';
+	import BeatmapSetInfo from './BeatmapSetInfo.svelte';
 
 	type Props = {
 		beatmapSet: BeatmapSet;
 	};
 	let { beatmapSet }: Props = $props();
-	const touchDevice = getContext<boolean>('touchDevice');
+	let moreInfo = $state(false);
 	const allModes = getContext<boolean>('allModes');
 	const probability = getContext<number>('probability');
 	const showEarly = getContext<boolean>('showEarly');
@@ -29,6 +32,28 @@
 		`${beatmapSet.beatmaps.filter((beatmap) => beatmap.spin > 0).length} / ${
 			beatmapSet.beatmaps.length
 		} Diff${beatmapSet.beatmaps.length == 1 ? '' : 's'}`;
+
+	const handleMouse = debounce((value: boolean) => {
+		moreInfo = value;
+	}, 300);
+
+	const handleMouseEnter = () => {
+		if (!$touchDevice) {
+			handleMouse(true);
+		}
+	};
+
+	const handleMouseLeave = () => {
+		if (!$touchDevice) {
+			handleMouse(false);
+		} else {
+			moreInfo = false;
+		}
+	};
+
+	const handleClick = () => {
+		if ($touchDevice) moreInfo = !moreInfo;
+	};
 </script>
 
 <div class="relative">
@@ -78,8 +103,8 @@
 		<div class="relative w-full h-full text-left bg-neutral-900 overflow-hidden">
 			<!-- Background Cover Image -->
 			<a
-				href={touchDevice ? undefined : `https://osu.ppy.sh/beatmapsets/${beatmapSet.id}`}
-				target={touchDevice ? undefined : '_blank'}
+				href={$touchDevice ? undefined : `https://osu.ppy.sh/beatmapsets/${beatmapSet.id}`}
+				target={$touchDevice ? undefined : '_blank'}
 				rel="noreferrer"
 			>
 				<img
@@ -95,7 +120,7 @@
 				<a
 					href={`https://osu.ppy.sh/beatmapsets/${beatmapSet.id}`}
 					target={'_blank'}
-					class={touchDevice ? 'pointer-events-auto' : undefined}
+					class={$touchDevice ? 'pointer-events-auto' : undefined}
 					rel="noreferrer"
 				>
 					<div class="flex flex-col gap-[1.6px]">
@@ -173,7 +198,7 @@
 						offset: [0, 5],
 						animation: 'fade',
 						onTrigger: (instance) => {
-							if (touchDevice)
+							if ($touchDevice)
 								timeoutId = setTimeout(() => {
 									instance.hide();
 								}, 3000);
@@ -181,7 +206,7 @@
 						onHide: () => {
 							clearTimeout(timeoutId);
 						},
-						trigger: touchDevice ? 'click' : 'mouseenter focus'
+						trigger: $touchDevice ? 'click' : 'mouseenter focus'
 					}}
 				>
 					{beatmapSet.unresolved ? 'Unresolved mod' : formatDate(secToDate(date))}
@@ -196,9 +221,12 @@
 				<!-- Diffs & Length -->
 				<a
 					class="flex md:flex-col gap-2 md:gap-1 w-full pointer-events-auto"
-					href={touchDevice ? undefined : `https://osu.ppy.sh/beatmapsets/${beatmapSet.id}`}
-					target={touchDevice ? undefined : '_blank'}
+					href={$touchDevice ? undefined : `https://osu.ppy.sh/beatmapsets/${beatmapSet.id}`}
+					target={$touchDevice ? undefined : '_blank'}
 					rel="noreferrer"
+					onclick={handleClick}
+					onmouseenter={handleMouseEnter}
+					onmouseleave={handleMouseLeave}
 				>
 					<!-- Diffs -->
 					<div class="flex items-center gap-1.5 min-w-[88px] w-max">
@@ -249,13 +277,23 @@
 				</a>
 			</div>
 
-			{#if touchDevice}
-				<div
+			{#if $touchDevice}
+				<button
 					class="absolute text-lg flex items-center justify-center w-[28.8px] md:w-9 h-[28.8px] md:h-9 right-0 bottom-0 leading-4 opacity-50"
+					style="zIndex:{moreInfo ? 31 : 20}"
+					onclick={() => (moreInfo = moreInfo)}
+					onmouseleave={() => (moreInfo = false)}
 				>
 					<span class="leading-none">ⓘ</span>
-				</div>
+				</button>
 			{/if}
 		</div>
 	</div>
+	<BeatmapSetInfo
+		beatmaps={beatmapSet.beatmaps}
+		{handleMouseEnter}
+		{handleMouseLeave}
+		{moreInfo}
+		unresolved={beatmapSet.unresolved}
+	/>
 </div>

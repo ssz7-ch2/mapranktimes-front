@@ -3,6 +3,7 @@
 	import VirtualList from '$lib/VirtualList.svelte';
 	import { chunk } from 'lodash-es';
 	import BeatmapSetItem from './BeatmapSetItem.svelte';
+	import { largeScreen } from '../../stores';
 
 	type Props = {
 		beatmapSets: BeatmapSet[];
@@ -25,8 +26,8 @@
 {/snippet}
 
 <VirtualList
-	items={chunk(beatmapSets, 2)}
-	itemHeight={164}
+	items={chunk(beatmapSets, $largeScreen ? 2 : 1)}
+	itemHeight={$largeScreen ? 164 : 124}
 	itemBuffer={5}
 	itemSnippet={beatmapSetItem}
 />

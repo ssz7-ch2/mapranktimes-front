@@ -1,9 +1,10 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
+	import { onMount, type Snippet } from 'svelte';
 	import ModeSelect from './ModeSelect.svelte';
 	import type { BeatmapSet } from './types/beatmap.types';
 	import Filter from './Filter.svelte';
 	import BeatmapSetList from './beatmapsets/BeatmapSetList.svelte';
+	import { largeScreen, touchDevice } from '../stores';
 
 	type Props = {
 		beatmapSets: BeatmapSet[];
@@ -14,6 +15,34 @@
 	let filter = $state<null | ((beatmapSet: BeatmapSet) => boolean)>(null);
 	let filterOn = $state(false);
 	let filterString = $state<string | null>(null);
+
+	const detectMediaChange = (
+		mediaQuery: string,
+		setValue: (value: boolean) => void,
+		callback?: (value: boolean) => void
+	) => {
+		const mql = matchMedia(mediaQuery);
+		setValue && setValue(mql.matches);
+		if (callback) callback(mql.matches);
+
+		const onMediaChange = (e: MediaQueryListEvent) => {
+			setValue && setValue(e.matches);
+			if (callback) callback(e.matches);
+			console.log(mediaQuery, e.matches);
+		};
+		mql.addEventListener('change', onMediaChange);
+	};
+
+	onMount(() => {
+		detectMediaChange('(pointer:coarse)', (value) => ($touchDevice = value));
+		detectMediaChange(
+			'(min-width:48em)',
+			(value) => ($largeScreen = value),
+			(value) => {
+				if (value === false) filterOn = true;
+			}
+		);
+	});
 </script>
 
 <main
