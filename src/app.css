@@ -87,10 +87,6 @@ body {
 		width 50ms ease-in-out;
 }
 
-.slider-thumb:hover ~ .slider-track {
-	height: 8px;
-}
-
 .slider:hover .slider-thumb {
 	height: 16px;
 	width: 16px;
@@ -99,13 +95,5 @@ body {
 .slider-track {
 	margin-left: 8px;
 	margin-right: 8px;
-	border-radius: 0 9999px 9999px 0;
-	background-color: theme(colors.neutral.500);
 	transition: height 50ms ease-in-out;
-}
-
-.slider-track.slider-track-0 {
-	border-radius: 9999px;
-	background-color: #ffdd55;
-	opacity: 0.85;
 }

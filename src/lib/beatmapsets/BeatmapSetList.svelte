@@ -13,7 +13,7 @@
 
 {#snippet beatmapSetItem(items: BeatmapSet[][])}
 	<div>
-		{#each items as row}
+		{#each items as row (row.map((beatmapSet) => beatmapSet.id).join('-'))}
 			<div class="flex flex-row w-full gap-3 md:gap-5 mb-3 md:mb-5">
 				{#each row as beatmapSet (beatmapSet.id)}
 					<div class="w-full md:w-1/2">

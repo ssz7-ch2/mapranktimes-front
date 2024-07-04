@@ -5,15 +5,15 @@
 	import { formatDate, secToDate, secToTime } from '../utils/date';
 	import { tooltip } from '$lib/tooltip';
 	import { debounce } from 'lodash-es';
-	import { touchDevice } from '../../stores';
+	import { selectedMode, touchDevice } from '../../stores';
 	import BeatmapSetInfo from './BeatmapSetInfo.svelte';
+	import { audioPlayer } from '$lib/utils/audio';
 
 	type Props = {
 		beatmapSet: BeatmapSet;
 	};
 	let { beatmapSet }: Props = $props();
 	let moreInfo = $state(false);
-	const allModes = getContext<boolean>('allModes');
 	const probability = getContext<number>('probability');
 	const showEarly = getContext<boolean>('showEarly');
 	const date =
@@ -28,6 +28,8 @@
 
 	let timeoutId = $state<NodeJS.Timeout | undefined>();
 
+	let ref: HTMLButtonElement;
+
 	const getDiffString = (beatmapSet: BeatmapSet) =>
 		`${beatmapSet.beatmaps.filter((beatmap) => beatmap.spin > 0).length} / ${
 			beatmapSet.beatmaps.length
@@ -35,7 +37,7 @@
 
 	const handleMouse = debounce((value: boolean) => {
 		moreInfo = value;
-	}, 300);
+	}, 150);
 
 	const handleMouseEnter = () => {
 		if (!$touchDevice) {
@@ -59,7 +61,12 @@
 <div class="relative">
 	<div class="flex flex-row w-full h-28 md:h-36 overflow-hidden rounded-[12px]">
 		<!-- List Square Image -->
-		<div class="relative flex-shrink-0 w-28 md:w-36 cursor-pointer" data-audio-state="paused">
+		<button
+			class="relative flex-shrink-0 w-28 md:w-36 cursor-pointer"
+			data-audio-state="paused"
+			onclick={() => audioPlayer.playAudio(ref, `https://b.ppy.sh/preview/${beatmapSet.id}.mp3`)}
+			bind:this={ref}
+		>
 			<img
 				class="h-full select-none object-cover"
 				src={`https://assets.ppy.sh/beatmaps/${beatmapSet.id}/covers/list.jpg`}
@@ -99,7 +106,7 @@
 					/>
 				</svg>
 			</div>
-		</div>
+		</button>
 		<div class="relative w-full h-full text-left bg-neutral-900 overflow-hidden">
 			<!-- Background Cover Image -->
 			<a
@@ -125,7 +132,7 @@
 				>
 					<div class="flex flex-col gap-[1.6px]">
 						<div class="flex gap-1">
-							{#if allModes}
+							{#if $selectedMode === -1}
 								<div class="flex items-center gap-[3px] shrink-0">
 									{#each beatmapSet.beatmaps
 										.reduce<number[]>((modes, beatmap) => (modes.includes(beatmap.mode) ? modes : [...modes, beatmap.mode]), [])
@@ -219,15 +226,17 @@
 				</h1>
 
 				<!-- Diffs & Length -->
+				<!-- svelte-ignore a11y_missing_content -->
 				<a
-					class="flex md:flex-col gap-2 md:gap-1 w-full pointer-events-auto"
-					href={$touchDevice ? undefined : `https://osu.ppy.sh/beatmapsets/${beatmapSet.id}`}
-					target={$touchDevice ? undefined : '_blank'}
-					rel="noreferrer"
+					class="absolute w-full h-1/4 md:h-1/3 bottom-0 -translate-x-1.5 md:-translate-x-2.5 pointer-events-auto z-[100]"
 					onclick={handleClick}
 					onmouseenter={handleMouseEnter}
 					onmouseleave={handleMouseLeave}
-				>
+					href={$touchDevice ? undefined : `https://osu.ppy.sh/beatmapsets/${beatmapSet.id}`}
+					target={$touchDevice ? undefined : '_blank'}
+					rel="noreferrer"
+				></a>
+				<div class="flex md:flex-col gap-2 md:gap-1 w-full pointer-events-auto">
 					<!-- Diffs -->
 					<div class="flex items-center gap-1.5 min-w-[88px] w-max">
 						<svg
@@ -274,15 +283,12 @@
 						</svg>
 						<h2 class="w-min text-xs">{secToTime(beatmapSet.beatmaps[0].len)}</h2>
 					</div>
-				</a>
+				</div>
 			</div>
 
 			{#if $touchDevice}
 				<button
-					class="absolute text-lg flex items-center justify-center w-[28.8px] md:w-9 h-[28.8px] md:h-9 right-0 bottom-0 leading-4 opacity-50"
-					style="zIndex:{moreInfo ? 31 : 20}"
-					onclick={() => (moreInfo = moreInfo)}
-					onmouseleave={() => (moreInfo = false)}
+					class="absolute text-lg flex items-center justify-center w-[28.8px] md:w-9 h-[28.8px] md:h-9 right-0 bottom-0 leading-4 opacity-50 z-30 pointer-events-none"
 				>
 					<span class="leading-none">ⓘ</span>
 				</button>
