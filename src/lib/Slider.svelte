@@ -14,11 +14,13 @@
 		sliderTrackClass?: string;
 		sliderThumbClass?: string;
 		class?: string;
+		overrideValue?: number; // mainly for changing the startingValue after mount
 	};
 	let {
 		min = 0,
 		max = 100,
 		startingValue = 0,
+		overrideValue,
 		step = 1,
 		onChange,
 		onAfterChange,
@@ -55,10 +57,10 @@
 		if (onChange) onChange(value);
 	});
 
-	// $effect(() => {
-	// 	console.log('effect ratio');
-	// 	ratio = (startingValue - min) / (max - min);
-	// });
+	$effect(() => {
+		console.log('effect ratio');
+		if (overrideValue) ratio = (overrideValue - min) / (max - min);
+	});
 
 	onMount(() => {
 		trackWidth = trackRef?.getBoundingClientRect().width ?? 0;

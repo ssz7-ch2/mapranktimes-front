@@ -128,6 +128,7 @@
 			onChange={(value) => audioPlayer.setVolume(value)}
 			onAfterChange={(value) => localStorage.setItem('volume', value.toString())}
 			startingValue={defaultVolume}
+			overrideValue={defaultVolume}
 		/>
 	</div>
 </div>
