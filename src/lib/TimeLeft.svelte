@@ -28,8 +28,7 @@
 			if (
 				beatmapSet.probability &&
 				beatmapSet.probability >= probability &&
-				// time.getTime() > Math.ceil((beatmapSet.rank_date_early! * 1000) / 600000) * 600000 + 120000
-				time.getTime() > beatmapSet.rank_date_early! * 1000 + 5000
+				time.getTime() > Math.ceil((beatmapSet.rank_date_early! * 1000) / 600000) * 600000 + 120000
 			) {
 				beatmapSet.probability = 0;
 				beatmapSet.rank_date_early = beatmapSet.rank_date;
