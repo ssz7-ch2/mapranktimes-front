@@ -39,7 +39,10 @@
 	"type": "module",
 	"dependencies": {
 		"@supabase/supabase-js": "^2.44.2",
+		"@sveltejs/adapter-vercel": "^5.4.0",
+		"@upstash/ratelimit": "^1.2.1",
 		"@upstash/redis": "^1.31.6",
+		"@vercel/edge": "^1.1.1",
 		"d3-interpolate": "^3.0.1",
 		"d3-scale": "^4.0.2",
 		"lodash-es": "^4.17.21",

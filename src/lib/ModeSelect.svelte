@@ -4,7 +4,7 @@
 	import { selectedMode } from '../stores';
 
 	type Props = {
-		beatmapSets: BeatmapSet[];
+		beatmapSets: readonly BeatmapSet[];
 	};
 
 	let { beatmapSets }: Props = $props();

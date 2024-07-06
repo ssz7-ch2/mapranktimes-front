@@ -52,16 +52,18 @@
 		ratio = clamp(Math.round(distance / width / round) * round, 0, 1);
 	};
 	$effect(() => {
-		if (onChange && value) onChange(value);
+		if (onChange) onChange(value);
 	});
 
-	$effect(() => {
-		ratio = (startingValue - min) / (max - min);
-	});
+	// $effect(() => {
+	// 	console.log('effect ratio');
+	// 	ratio = (startingValue - min) / (max - min);
+	// });
 
 	onMount(() => {
 		trackWidth = trackRef?.getBoundingClientRect().width ?? 0;
 		thumbWidth = thumbRef?.getBoundingClientRect().width ?? 0;
+		ratio = (startingValue - min) / (max - min);
 	});
 </script>
 
@@ -81,22 +83,20 @@
 		tracking = true;
 	}}
 >
-	<div class="w-full h-full touch-none">
-		<div class="w-full h-full relative">
-			<div class="absolute left-0 top-1/2 -translate-y-1/2 w-full" bind:this={trackRef}>
-				<div
-					class={sliderTrackClass}
-					style="background: linear-gradient(90deg, {trackColor} {ratio *
-						100}%, {trackColorBase} {ratio * 100}%"
-				></div>
-			</div>
+	<div class="w-full h-full touch-none relative">
+		<div class="absolute left-0 top-1/2 -translate-y-1/2 w-full" bind:this={trackRef}>
 			<div
-				class="absolute top-1/2 -translate-y-1/2 z-[999]"
-				style="left:{ratio * (trackWidth - thumbWidth)}px"
-				bind:this={thumbRef}
-			>
-				<div class={sliderThumbClass}></div>
-			</div>
+				class={sliderTrackClass}
+				style="background: linear-gradient(90deg, {trackColor} {ratio *
+					100}%, {trackColorBase} {ratio * 100}%"
+			></div>
+		</div>
+		<div
+			class="absolute top-1/2 -translate-y-1/2 z-[999]"
+			style="left:{ratio * (trackWidth - thumbWidth)}px"
+			bind:this={thumbRef}
+		>
+			<div class={sliderThumbClass}></div>
 		</div>
 	</div>
 </div>

@@ -1,6 +1,6 @@
 <script>
 	import MainLayout from '$lib/MainLayout.svelte';
-	export let data;
+	let { data } = $props();
 </script>
 
 <MainLayout beatmapSets={data.beatmapSets}>

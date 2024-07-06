@@ -6,7 +6,7 @@
 	import { largeScreen } from '../../stores';
 
 	type Props = {
-		beatmapSets: BeatmapSet[];
+		beatmapSets: readonly BeatmapSet[];
 	};
 	let { beatmapSets }: Props = $props();
 </script>

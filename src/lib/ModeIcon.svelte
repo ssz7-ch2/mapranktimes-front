@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { Mode } from './types/beatmap.types';
 	import type { SVGAttributes } from 'svelte/elements';
 
 	interface Props extends SVGAttributes<SVGSVGElement> {

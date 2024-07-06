@@ -1,31 +1,23 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { debounce } from 'lodash-es';
-	import type { BeatmapSet } from './types/beatmap.types';
 	import { stringToFilter } from './utils/stringToFilter';
+	import { filter, filterOn, filterString } from '../stores';
 
 	type Props = {
-		filter: ((beatmapSet: BeatmapSet) => boolean) | null;
-		filterOn: boolean;
-		filterString: string | null;
 		class?: string;
 	};
 
-	let {
-		filter = $bindable(),
-		filterOn = $bindable(),
-		filterString = $bindable(),
-		...restProps
-	}: Props = $props();
+	let { ...restProps }: Props = $props();
 	let value = $state('');
 
 	const updateFilter = debounce((line: string) => {
 		const { filterString: newFilterString, filter: newFilter } = stringToFilter(line);
-		if (newFilterString != filterString) {
-			filter = newFilter;
-			filterString = newFilterString;
+		if (newFilterString != $filterString) {
+			$filter = newFilter;
+			$filterString = newFilterString;
 		}
-		if (line.length > 0) filterOn = true;
+		if (line.length > 0) $filterOn = true;
 	}, 500);
 
 	onMount(() => {
@@ -34,8 +26,8 @@
 			value = localFilterString;
 			const { filterString: newFilterString, filter: newFilter } =
 				stringToFilter(localFilterString);
-			filter = newFilter;
-			filterString = newFilterString;
+			$filter = newFilter;
+			$filterString = newFilterString;
 		}
 	});
 </script>

@@ -1,33 +1,29 @@
 <script lang="ts">
-	import { onMount, type Snippet } from 'svelte';
+	import { onDestroy, onMount, type Snippet } from 'svelte';
 	import ModeSelect from './ModeSelect.svelte';
 	import type { BeatmapSet } from './types/beatmap.types';
 	import Filter from './Filter.svelte';
 	import BeatmapSetList from './beatmapsets/BeatmapSetList.svelte';
-	import { largeScreen, touchDevice } from '../stores';
+	import { filter, filterOn, largeScreen, touchDevice } from '../stores';
 	import { selectedMode } from '../stores';
 	import { audioPlayer } from './utils/audio';
 	import { debounce } from 'lodash-es';
 	import Slider from './Slider.svelte';
 
 	type Props = {
-		beatmapSets: BeatmapSet[];
+		beatmapSets: readonly BeatmapSet[];
 		children: Snippet;
 	};
 	let { beatmapSets, children }: Props = $props();
-
-	let filter = $state<null | ((beatmapSet: BeatmapSet) => boolean)>(null);
-	let filterOn = $state(false);
-	let filterString = $state<string | null>(null);
 
 	let isOverSlider = $state(false);
 	let volumeSliderRef: HTMLDivElement;
 	let defaultVolume = $state(50);
 
 	let filteredBeatmapsets = $derived.by(() => {
-		if (!filterOn || !filter) return beatmapSets;
+		if (!$filterOn || !$filter) return beatmapSets;
 
-		return beatmapSets.filter(filter);
+		return beatmapSets.filter($filter);
 	});
 
 	const detectMediaChange = (
@@ -56,7 +52,7 @@
 			'(min-width:48em)',
 			(value) => ($largeScreen = value),
 			(value) => {
-				if (value === false) filterOn = true;
+				if (value === false) $filterOn = true;
 			}
 		);
 
@@ -81,7 +77,7 @@
 >
 	{@render children()}
 	<ModeSelect {beatmapSets} />
-	<Filter bind:filterOn bind:filterString bind:filter />
+	<Filter />
 
 	<div class="flex-grow w-full">
 		<BeatmapSetList

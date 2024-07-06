@@ -3,8 +3,8 @@
 	import type { Beatmap } from '$lib/types/beatmap.types';
 	import { secToTime } from '$lib/utils/date';
 	import mapDiffColor from '$lib/utils/mapDiffColor';
-	import { getContext } from 'svelte';
 	import { fade } from 'svelte/transition';
+	import { selectedMode } from '../../stores';
 
 	type Props = {
 		unresolved: boolean;
@@ -14,7 +14,6 @@
 		beatmaps: Beatmap[];
 	};
 	let { unresolved, moreInfo, handleMouseEnter, handleMouseLeave, beatmaps }: Props = $props();
-	const allModes = getContext<boolean>('allModes');
 
 	$effect(() => {
 		moreInfo;
@@ -85,12 +84,14 @@
 				</div>
 				<p
 					class="rounded-full pl-1 pr-1.5 font-bold"
-					style={`background-color:${mapDiffColor(beatmap.sr)}; color:${beatmap.sr < 6.5 ? 'black' : '#FFD966'}`}
+					style="background-color:{mapDiffColor(beatmap.sr)}; color:{beatmap.sr < 6.5
+						? 'black'
+						: '#FFD966'}"
 				>
 					★ {beatmap.sr.toFixed(2)}
 				</p>
 				<div class="flex flex-row gap-1 items-center overflow-hidden">
-					{#if allModes}
+					{#if $selectedMode === -1}
 						<ModeIcon
 							mode={beatmap.mode}
 							width={14}

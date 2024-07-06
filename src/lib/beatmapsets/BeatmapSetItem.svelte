@@ -1,11 +1,10 @@
 <script lang="ts">
 	import type { BeatmapSet } from '$lib/types/beatmap.types';
 	import ModeIcon from '../ModeIcon.svelte';
-	import { getContext } from 'svelte';
 	import { formatDate, secToDate, secToTime } from '../utils/date';
 	import { tooltip } from '$lib/tooltip';
 	import { debounce } from 'lodash-es';
-	import { selectedMode, touchDevice } from '../../stores';
+	import { probabilityCutoff, selectedMode, showEarly, touchDevice } from '../../stores';
 	import BeatmapSetInfo from './BeatmapSetInfo.svelte';
 	import { audioPlayer } from '$lib/utils/audio';
 
@@ -14,17 +13,17 @@
 	};
 	let { beatmapSet }: Props = $props();
 	let moreInfo = $state(false);
-	const probability = getContext<number>('probability');
-	const showEarly = getContext<boolean>('showEarly');
-	const date =
-		beatmapSet.probability !== null && beatmapSet.probability >= probability && showEarly
+	const date = $derived(
+		beatmapSet.probability !== null && beatmapSet.probability >= $probabilityCutoff && $showEarly
 			? beatmapSet.rank_date_early ?? beatmapSet.rank_date
-			: beatmapSet.rank_date;
-
-	const tooltipDate =
-		beatmapSet.probability !== null && beatmapSet.probability >= probability && !showEarly
+			: beatmapSet.rank_date
+	);
+	const tooltipDate = $derived(
+		beatmapSet.probability !== null && beatmapSet.probability >= $probabilityCutoff && !$showEarly
 			? beatmapSet.rank_date_early ?? beatmapSet.rank_date
-			: beatmapSet.rank_date;
+			: beatmapSet.rank_date
+	);
+	const probability = $derived(beatmapSet.probability);
 
 	let timeoutId = $state<NodeJS.Timeout | undefined>();
 
@@ -59,7 +58,10 @@
 </script>
 
 <div class="relative">
-	<div class="flex flex-row w-full h-28 md:h-36 overflow-hidden rounded-[12px]">
+	<div
+		class="flex flex-row w-full h-28 md:h-36 overflow-hidden rounded-[12px]"
+		style={beatmapSet.unresolved ? 'filter: brightness(0.5)' : ''}
+	>
 		<!-- List Square Image -->
 		<button
 			class="relative flex-shrink-0 w-28 md:w-36 cursor-pointer"
@@ -176,9 +178,7 @@
 										beatmapSet.unresolved
 											? 'Will be ranked when mapper resolves mod'
 											: `*Rank Early Probability: ${
-													beatmapSet.probability === null
-														? 'Unknown'
-														: (beatmapSet.probability * 100).toFixed(2) + '%'
+													probability === null ? 'Unknown' : (probability * 100).toFixed(2) + '%'
 												}`
 									}
                   <br />
@@ -216,11 +216,13 @@
 						trigger: $touchDevice ? 'click' : 'mouseenter focus'
 					}}
 				>
-					{beatmapSet.unresolved ? 'Unresolved mod' : formatDate(secToDate(date))}
-					{#if beatmapSet.probability !== null && beatmapSet.probability >= probability}
-						*
-						<div class="text-[11px] font-light inline-block pl-[1px] pt-[2px] align-top">
-							{(beatmapSet.probability * 100).toFixed(probability == 0 ? 2 : 0)}%
+					{beatmapSet.unresolved
+						? 'Unresolved mod'
+						: formatDate(
+								secToDate(date)
+							)}{#if probability !== null && probability >= $probabilityCutoff}*
+						<div class="text-[11px] font-light inline-block -translate-x-1 pt-[2px] align-top">
+							{(probability * 100).toFixed($probabilityCutoff == 0 ? 2 : 0)}%
 						</div>
 					{/if}
 				</h1>
