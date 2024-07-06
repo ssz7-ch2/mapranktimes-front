@@ -19,7 +19,11 @@
 
 	const connectDatabase = () => {
 		worker = new ViteWorker();
-		worker.onmessage = async (event: { data: Tables<'updates'> }) => {
+		worker.onmessage = async (event: { data: Tables<'updates'> | BeatmapSet[] }) => {
+			if (!('timestamp' in event.data)) {
+				beatmapSets = event.data;
+				return;
+			}
 			const { updated_maps, deleted_maps, timestamp } = event.data;
 			let data: BeatmapSetDatabase[] | null = null;
 			if (updated_maps.length > 0) {
