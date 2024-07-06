@@ -58,7 +58,6 @@
 	});
 
 	$effect(() => {
-		console.log('effect ratio');
 		if (overrideValue) ratio = (overrideValue - min) / (max - min);
 	});
 
