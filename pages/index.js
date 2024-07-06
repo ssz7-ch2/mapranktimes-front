@@ -140,6 +140,10 @@ const Home = () => {
     const connectDatabase = () => {
       workerRef.current = new Worker(new URL("../worker.js", import.meta.url));
       workerRef.current.onmessage = async (event) => {
+        if (!("timestamp" in event.data)) {
+          setBeatmapSets(event.data);
+          return;
+        }
         const { updated_maps, deleted_maps, timestamp } = event.data;
         let data;
         if (updated_maps.length > 0) {
