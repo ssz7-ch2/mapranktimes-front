@@ -1,7 +1,12 @@
 import { json } from '@sveltejs/kit';
 import { createClient } from '@supabase/supabase-js';
 import { Redis } from '@upstash/redis';
-import { env } from '$env/dynamic/private';
+import {
+	SUPABASE_ANON_KEY,
+	SUPABASE_URL,
+	UPSTASH_REDIS_REST_TOKEN,
+	UPSTASH_REDIS_REST_URL
+} from '$env/static/private';
 import type { Database } from '$lib/types/database.types.js';
 
 export async function POST({ request }) {
@@ -12,8 +17,8 @@ export async function POST({ request }) {
 	console.log('getupdated');
 
 	const redis = new Redis({
-		url: env.UPSTASH_REDIS_REST_URL,
-		token: env.UPSTASH_REDIS_REST_TOKEN
+		url: UPSTASH_REDIS_REST_URL,
+		token: UPSTASH_REDIS_REST_TOKEN
 	});
 	const dataCached = await redis.get(`updates-${timestamp}`);
 
@@ -23,7 +28,7 @@ export async function POST({ request }) {
 		});
 	}
 
-	const supabase = createClient<Database>(env.SUPABASE_URL, env.SUPABASE_ANON_KEY);
+	const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 	const { data, error } = await supabase.from('beatmapsets').select('*').in('id', updatedMaps);
 

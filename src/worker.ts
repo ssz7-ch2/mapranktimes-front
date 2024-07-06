@@ -1,8 +1,8 @@
 import { createClient, type RealtimePostgresChangesPayload } from '@supabase/supabase-js';
-import { env } from '$env/dynamic/public';
+import { PUBLIC_SUPABASE_ANON_KEY, PUBLIC_SUPABASE_URL } from '$env/static/public';
 import type { Database, Tables } from '$lib/types/database.types';
 
-const supabase = createClient<Database>(env.PUBLIC_SUPABASE_URL, env.PUBLIC_SUPABASE_ANON_KEY);
+const supabase = createClient<Database>(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY);
 
 const connectDatabase = () => {
 	const mapUpdatesChannel = supabase.channel('map-updates');
