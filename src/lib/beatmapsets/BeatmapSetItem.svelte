@@ -25,14 +25,18 @@
 	);
 	const probability = $derived(beatmapSet.probability);
 
+	let beatmaps = beatmapSet.beatmaps.filter(
+		(beatmap) => $selectedMode === -1 || beatmap.mode === $selectedMode
+	);
+
 	let timeoutId = $state<NodeJS.Timeout | undefined>();
 
 	let ref: HTMLButtonElement;
 
-	const getDiffString = (beatmapSet: BeatmapSet) =>
-		`${beatmapSet.beatmaps.filter((beatmap) => beatmap.spin > 0).length} / ${
-			beatmapSet.beatmaps.length
-		} Diff${beatmapSet.beatmaps.length == 1 ? '' : 's'}`;
+	const getDiffString = () =>
+		`${beatmaps.filter((beatmap) => beatmap.spin > 0).length} / ${
+			beatmaps.length
+		} Diff${beatmaps.length == 1 ? '' : 's'}`;
 
 	const handleMouse = debounce((value: boolean) => {
 		moreInfo = value;
@@ -262,7 +266,7 @@
 							</g>
 						</svg>
 
-						<h2 class="w-min whitespace-nowrap text-xs">{getDiffString(beatmapSet)}</h2>
+						<h2 class="w-min whitespace-nowrap text-xs">{getDiffString()}</h2>
 					</div>
 
 					<!-- Length -->
@@ -298,7 +302,7 @@
 		</div>
 	</div>
 	<BeatmapSetInfo
-		beatmaps={beatmapSet.beatmaps}
+		{beatmaps}
 		{handleMouseEnter}
 		{handleMouseLeave}
 		{moreInfo}
