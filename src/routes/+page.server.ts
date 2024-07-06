@@ -14,7 +14,11 @@ export async function load() {
 
 	console.log('getqualified');
 
-	if (!data || supabaseError) throw error(404, { message: `Failed to get qualified maps.` });
+	if (!data || supabaseError) {
+		console.log('Failed to get qualified maps.');
+		return { beatmapSets: null };
+		// throw error(404, { message: `Failed to get qualified maps.` })
+	}
 
 	const beatmapSets = data
 		.map((beatmapSet) => {

@@ -9,9 +9,10 @@
 	import type { Tables } from '$lib/types/database.types';
 	import type { BeatmapSet, BeatmapSetDatabase } from '$lib/types/beatmap.types';
 	import ViteWorker from '../worker?worker';
+	import { secToDate } from '$lib/utils/date';
 	let { data } = $props();
 
-	let beatmapSets = $state.frozen(data.beatmapSets);
+	let beatmapSets = $state.frozen(data.beatmapSets ?? []);
 	let showDialog = $state(false);
 
 	let worker: Worker;
@@ -89,6 +90,25 @@
 		const probability = localStorage.getItem('probability');
 		if (probability) {
 			$probabilityCutoff = parseFloat(probability);
+		}
+
+		if (data.beatmapSets) localStorage.setItem('beatmapSets', JSON.stringify(data.beatmapSets));
+		else {
+			// database is dead so use local storage in the meantime
+			const localBeatmapSetsString = localStorage.getItem('beatmapSets');
+			if (localBeatmapSetsString) {
+				const localBeatmapSets: BeatmapSet[] = JSON.parse(localBeatmapSetsString);
+				if (localBeatmapSets[0].rank_date) {
+					beatmapSets = localBeatmapSets.filter(
+						(beatmapSet) => Date.now() - secToDate(beatmapSet.rank_date).getTime() < 10 * 60000
+					);
+					console.log('local beatmapsets loaded');
+				} else {
+					// remove old version
+					localStorage.removeItem('beatmapSets');
+					console.log('removed old beatmapsets');
+				}
+			}
 		}
 
 		connectDatabase();
