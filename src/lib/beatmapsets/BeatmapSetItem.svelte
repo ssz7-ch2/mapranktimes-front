@@ -25,8 +25,10 @@
 	);
 	const probability = $derived(beatmapSet.probability);
 
-	let beatmaps = beatmapSet.beatmaps.filter(
-		(beatmap) => $selectedMode === -1 || beatmap.mode === $selectedMode
+	let beatmaps = $derived(
+		$selectedMode === -1
+			? beatmapSet.beatmaps
+			: beatmapSet.beatmaps.filter((beatmap) => beatmap.mode === $selectedMode)
 	);
 
 	let timeoutId = $state<NodeJS.Timeout | undefined>();
