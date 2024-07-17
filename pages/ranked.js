@@ -34,7 +34,7 @@ const Home = () => {
   const [filter, setFilter] = useState({ string: null, applyFilter: null });
   const [filterOn, setFilterOn] = useState(false);
   const [defaultVolume, setDefaultVolume] = useState(70);
-  const [selectedMode, _setSelectedMode] = useState(0); // -1 All, 0 osu, 1 taiko, 2 catch, 3 mania
+  const [selectedMode, _setSelectedMode] = useState(-1); // -1 All, 0 osu, 1 taiko, 2 catch, 3 mania
   const volumeSliderRef = useRef();
 
   const modeList = ["osu", "taiko", "catch", "mania"];

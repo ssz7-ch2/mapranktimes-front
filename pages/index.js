@@ -40,7 +40,7 @@ const Home = () => {
   const [defaultVolume, setDefaultVolume] = useState(70);
   const [probability, setProbability] = useState(0.01);
   const [showEarly, setShowEarly] = useState(null);
-  const [selectedMode, _setSelectedMode] = useState(0); // -1 All, 0 osu, 1 taiko, 2 catch, 3 mania
+  const [selectedMode, _setSelectedMode] = useState(-1); // -1 All, 0 osu, 1 taiko, 2 catch, 3 mania
   const volumeSliderRef = useRef();
 
   const workerRef = useRef();
