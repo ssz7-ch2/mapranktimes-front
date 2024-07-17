@@ -57,7 +57,7 @@ const TimeLeft = ({
       if (showEarly && beatmapSet.probability !== null && beatmapSet.probability >= probability)
         rankDate = beatmapSet.rank_date_early * 1000;
 
-      setTimeLeft(Math.floor(rankDate / 60000) * 60000 - date);
+      setTimeLeft(rankDate - date);
     };
 
     updateTime();
