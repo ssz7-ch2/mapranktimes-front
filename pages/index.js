@@ -68,6 +68,7 @@ const Home = () => {
     const localBeatmapSets = localStorage.getItem("beatmapSets");
     if (localBeatmapSets) {
       const beatmapSets = JSON.parse(localBeatmapSets);
+      if (beatmapSets.length === 0) return;
       if (beatmapSets[0].rank_date) {
         setBeatmapSets(
           beatmapSets.filter(
